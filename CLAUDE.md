@@ -3,8 +3,11 @@
 ## Build & Test Workflow
 
 After every feature change or code modification:
-1. Run `npm run tauri build` or `build.bat` to build the application
+1. Run `npm run release` to auto-bump version and build
 2. Launch the built executable from `src-tauri\target\release\scytheops.exe` to verify the changes work
+
+**Note:** `npm run release` automatically increments the patch version (e.g., 0.1.0 → 0.1.1) before building.
+For manual builds without version bump, use `npm run tauri build`.
 
 ## Project Structure
 
@@ -47,19 +50,18 @@ The app checks for updates on launch using GitHub Releases.
 
 ### Creating a Release (triggers auto-update for users)
 
-1. Bump the version in `src-tauri/tauri.conf.json`
-2. Set the signing key environment variable:
+1. Set the signing key environment variable:
    ```
    set TAURI_SIGNING_PRIVATE_KEY=<contents of src-tauri/.tauri-updater-key>
    ```
-3. Build: `npm run tauri build`
-4. Create a GitHub Release with the new version tag (e.g., `v0.2.0`)
-5. Upload these files from `src-tauri/target/release/bundle/`:
+2. Build with auto version bump: `npm run release`
+3. Create a GitHub Release with the new version tag (e.g., `v0.1.2`)
+4. Upload these files from `src-tauri/target/release/bundle/`:
    - `nsis/Scythe Ops_x.x.x_x64-setup.exe`
    - `nsis/Scythe Ops_x.x.x_x64-setup.exe.sig`
    - `msi/Scythe Ops_x.x.x_x64_en-US.msi`
    - `msi/Scythe Ops_x.x.x_x64_en-US.msi.sig`
-6. Also upload the `latest.json` file from `src-tauri/target/release/bundle/`
+5. Also upload the `latest.json` file from `src-tauri/target/release/bundle/`
 
 Users will automatically receive the update next time they launch the app.
 
