@@ -5,8 +5,8 @@ import { useUpdater, type UpdateStatus } from "../hooks/useUpdater";
 export function UpdateNotification() {
   const { status, progress } = useUpdater();
 
-  // Don't show anything if idle or just checking
-  if (status === "idle" || status === "checking") {
+  // Don't show anything if idle, checking, or error (fail silently)
+  if (status === "idle" || status === "checking" || status === "error") {
     return null;
   }
 
