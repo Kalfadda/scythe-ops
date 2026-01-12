@@ -4,7 +4,7 @@
 
 - **Admin Access Password**: `ScytheDevForever123`
 - **Repository Password**: `ScytheOps123!`
-- **GitHub Repo**: Private repository at github.com (requires GitHub account access)
+- **GitHub Repo**: https://github.com/Kalfadda/scythe-ops (private)
 
 ## Build & Test Workflow
 
