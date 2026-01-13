@@ -1,0 +1,60 @@
+# Changelog
+
+All notable changes to Scythe Ops will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [0.1.2] - 2026-01-12
+
+### Added
+- Left sidebar navigation with dark theme
+- Tasks tab containing existing task tracking functionality
+- Modeling tab (stub with coming soon placeholder)
+
+### Changed
+- Relocated user info, settings, and logout to sidebar bottom
+- Reorganized dashboard layout with fixed sidebar
+
+## [0.1.1] - 2026-01-12
+
+### Changed
+- Disabled auto-update artifact generation temporarily due to Windows signing issues
+- Auto-update code remains in place for future use
+
+### Fixed
+- Hide update check errors silently to avoid user confusion
+
+## [0.1.0] - 2026-01-12
+
+### Added
+- Auto-update functionality via Tauri updater plugin
+- UpdateNotification component for update status UI
+- useUpdater hook for checking updates on app launch
+- Auto version bump on build (`npm run release` command)
+- Documented Supabase email confirmation setting requirement
+- Documented release/update process in CLAUDE.md
+
+### Changed
+- Renamed binary from `app.exe` to `scytheops.exe`
+- Updated README for internal team use
+- Removed public-facing setup instructions
+
+### Security
+- Removed hardcoded admin password from source code (now uses environment variable)
+- Removed credentials from CLAUDE.md
+- Added `.env.example` with admin password placeholder
+
+## [0.0.1] - 2026-01-12
+
+### Added
+- Initial release of Scythe Ops project management app
+- Tauri + React + TypeScript + Vite stack
+- Supabase authentication and PostgreSQL database integration
+- Asset/task management system with:
+  - Categories (Art, Code, Audio, Design, Docs, Marketing, Infra, Other)
+  - Priorities (Low, Medium, High, Critical)
+  - Status tracking (Pending, Implemented)
+- Real-time updates via Supabase subscriptions
+- Admin panel for user management
+- Light mode theme
+- Protected routes with authentication
