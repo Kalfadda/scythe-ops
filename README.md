@@ -97,6 +97,23 @@ Click the **X** on any task card.
 
 ## Changelog
 
+### v0.1.11
+- Added task claim system - users can claim/unclaim tasks to signal they're working on them
+- Claimed tasks have animated purple glow and badge showing who claimed
+- Claim/Release buttons in task details modal
+- Blocked users automatically have their claimed tasks released
+- Renamed app subtitle to "Dev Team Management"
+
+### v0.1.10
+- Fixed edge case: editing event type to deliverable with "create task" now works correctly
+
+### v0.1.9
+- Added database heartbeat on app startup to prevent Supabase free tier from pausing
+
+### v0.1.8
+- Deleting a task now also deletes linked calendar events
+- Upcoming events sidebar now always shows up to 5 events
+
 ### v0.1.7
 - Added edit functionality to task details modal
 - Fixed long descriptions causing horizontal overflow in schedule events

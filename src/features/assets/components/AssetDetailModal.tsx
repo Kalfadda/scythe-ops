@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, User, Clock, CheckCircle2, Tag, Flag, ArrowLeft, ArrowRight, Archive, Edit2, ChevronDown } from "lucide-react";
+import { X, User, Clock, CheckCircle2, Tag, Flag, ArrowLeft, ArrowRight, Archive, Edit2, ChevronDown, UserCheck, UserMinus } from "lucide-react";
 import type { AssetWithCreator } from "../hooks/useAssets";
 import { getDaysUntilDelete } from "../hooks/useAssets";
 import { ASSET_CATEGORIES, ASSET_PRIORITIES, type AssetCategory, type AssetPriority } from "@/types/database";
+import { useAuthStore } from "@/stores/authStore";
 
 interface AssetDetailModalProps {
   asset: AssetWithCreator | null;
@@ -14,6 +15,8 @@ interface AssetDetailModalProps {
   onMoveToPending?: (id: string) => void;
   onMoveToCompleted?: (id: string) => void;
   onUpdate?: (id: string, data: { name: string; blurb: string; category: AssetCategory | null; priority: AssetPriority | null }) => void;
+  onClaim?: (id: string) => void;
+  onUnclaim?: (id: string) => void;
   isTransitioning?: boolean;
 }
 
@@ -44,8 +47,11 @@ export function AssetDetailModal({
   onMoveToPending,
   onMoveToCompleted,
   onUpdate,
+  onClaim,
+  onUnclaim,
   isTransitioning,
 }: AssetDetailModalProps) {
+  const user = useAuthStore((state) => state.user);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBlurb, setEditBlurb] = useState("");
@@ -70,6 +76,11 @@ export function AssetDetailModal({
   const priority = asset.priority ? ASSET_PRIORITIES[asset.priority] : null;
   const statusStyle = STATUS_STYLES[asset.status];
   const daysLeft = asset.status === "implemented" ? getDaysUntilDelete(asset.implemented_at) : null;
+
+  // Claim state
+  const isClaimed = !!asset.claimed_by;
+  const isClaimedByMe = user?.id === asset.claimed_by;
+  const claimerName = asset.claimer?.display_name || asset.claimer?.email || "Unknown";
 
   const handleSave = () => {
     if (onUpdate && editName.trim()) {
@@ -164,6 +175,29 @@ export function AssetDetailModal({
                   }}>
                     {statusStyle.label}
                   </span>
+
+                  {/* Claimed badge */}
+                  {isClaimed && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 999,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        boxShadow: '0 2px 4px rgba(124, 58, 237, 0.3)',
+                      }}
+                    >
+                      <UserCheck style={{ width: 12, height: 12 }} />
+                      {isClaimedByMe ? 'Claimed by you' : `Claimed by ${claimerName.split('@')[0]}`}
+                    </motion.span>
+                  )}
 
                   {/* Days until auto-delete badge for implemented */}
                   {daysLeft !== null && (
@@ -607,6 +641,64 @@ export function AssetDetailModal({
                     )}
                   </>
                 )}
+
+                {/* Claimed info */}
+                {isClaimed && asset.claimer && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{
+                        backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                        borderRadius: 10,
+                        padding: 14,
+                        border: '1px solid rgba(124, 58, 237, 0.15)',
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginBottom: 6,
+                        color: '#7c3aed',
+                      }}>
+                        <UserCheck style={{ width: 14, height: 14 }} />
+                        <span style={{ fontSize: 12, fontWeight: 500 }}>Claimed by</span>
+                      </div>
+                      <p style={{ fontSize: 14, color: '#1e1e2e', fontWeight: 500, margin: 0 }}>
+                        {asset.claimer.display_name || asset.claimer.email}
+                      </p>
+                    </motion.div>
+
+                    {asset.claimed_at && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 }}
+                        style={{
+                          backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                          borderRadius: 10,
+                          padding: 14,
+                          border: '1px solid rgba(124, 58, 237, 0.15)',
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          marginBottom: 6,
+                          color: '#7c3aed',
+                        }}>
+                          <Clock style={{ width: 14, height: 14 }} />
+                          <span style={{ fontSize: 12, fontWeight: 500 }}>Claimed on</span>
+                        </div>
+                        <p style={{ fontSize: 14, color: '#1e1e2e', fontWeight: 500, margin: 0 }}>
+                          {formatFullDate(asset.claimed_at)}
+                        </p>
+                      </motion.div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -658,14 +750,95 @@ export function AssetDetailModal({
                   Save Changes
                 </button>
               </div>
-            ) : (onMarkCompleted || onMarkImplemented || onMoveToPending || onMoveToCompleted) && (
+            ) : (onMarkCompleted || onMarkImplemented || onMoveToPending || onMoveToCompleted || onClaim || onUnclaim) && (
               <div style={{
                 padding: '16px 24px',
                 borderTop: '1px solid #e5e5eb',
                 backgroundColor: '#fafafa',
                 display: 'flex',
+                flexDirection: 'column',
                 gap: 12,
               }}>
+                {/* Claim/Unclaim button row */}
+                {(onClaim || onUnclaim) && (
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    {!isClaimed && onClaim && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => onClaim(asset.id)}
+                        disabled={isTransitioning}
+                        style={{
+                          flex: 1,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '12px 20px',
+                          borderRadius: 10,
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                          color: '#fff',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                          opacity: isTransitioning ? 0.7 : 1,
+                          boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <UserCheck style={{ marginRight: 8, width: 18, height: 18 }} />
+                        Claim This Task
+                      </motion.button>
+                    )}
+                    {isClaimed && isClaimedByMe && onUnclaim && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => onUnclaim(asset.id)}
+                        disabled={isTransitioning}
+                        style={{
+                          flex: 1,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '12px 20px',
+                          borderRadius: 10,
+                          border: '2px solid rgba(124, 58, 237, 0.3)',
+                          backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                          color: '#7c3aed',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                          opacity: isTransitioning ? 0.7 : 1,
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <UserMinus style={{ marginRight: 8, width: 18, height: 18 }} />
+                        Release Claim
+                      </motion.button>
+                    )}
+                    {isClaimed && !isClaimedByMe && (
+                      <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '12px 20px',
+                        borderRadius: 10,
+                        backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                        color: '#7c3aed',
+                        fontSize: 14,
+                        fontWeight: 500,
+                      }}>
+                        <UserCheck style={{ marginRight: 8, width: 16, height: 16 }} />
+                        Claimed by {claimerName.split('@')[0]}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Status action buttons */}
+                <div style={{ display: 'flex', gap: 12 }}>
                 {/* Back buttons */}
                 {onMoveToPending && (
                   <button
@@ -769,6 +942,7 @@ export function AssetDetailModal({
                     <ArrowRight style={{ marginLeft: 8, width: 16, height: 16 }} />
                   </button>
                 )}
+                </div>
               </div>
             )}
             </motion.div>

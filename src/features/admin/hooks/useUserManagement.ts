@@ -30,6 +30,22 @@ export function useBlockUser() {
       blocked: boolean;
       reason?: string;
     }) => {
+      // If blocking user, unclaim all their tasks first
+      if (blocked) {
+        const { error: unclaimError } = await supabase
+          .from("assets")
+          .update({
+            claimed_by: null,
+            claimed_at: null,
+          })
+          .eq("claimed_by", userId);
+
+        if (unclaimError) {
+          console.warn("Failed to unclaim user tasks:", unclaimError);
+          // Continue with blocking even if unclaim fails
+        }
+      }
+
       const { data, error } = await supabase
         .from("profiles")
         .update({
@@ -46,6 +62,7 @@ export function useBlockUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 }

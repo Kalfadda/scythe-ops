@@ -94,6 +94,8 @@ export type Database = {
           completed_at: string | null;
           implemented_by: string | null;
           implemented_at: string | null;
+          claimed_by: string | null;
+          claimed_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -109,6 +111,8 @@ export type Database = {
           completed_at?: string | null;
           implemented_by?: string | null;
           implemented_at?: string | null;
+          claimed_by?: string | null;
+          claimed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -124,6 +128,8 @@ export type Database = {
           completed_at?: string | null;
           implemented_by?: string | null;
           implemented_at?: string | null;
+          claimed_by?: string | null;
+          claimed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -14,7 +14,7 @@ interface AssetListProps {
 
 export function AssetList({ status, category }: AssetListProps) {
   const { data: assets, isLoading, error } = useAssets({ status, category });
-  const { markAsCompleted, markAsImplemented, moveToPending, moveToCompleted, deleteAsset, updateAsset } = useAssetMutations();
+  const { markAsCompleted, markAsImplemented, moveToPending, moveToCompleted, deleteAsset, updateAsset, claimAsset, unclaimAsset } = useAssetMutations();
   const [selectedAsset, setSelectedAsset] = useState<AssetWithCreator | null>(null);
 
   if (isLoading) {
@@ -127,7 +127,28 @@ export function AssetList({ status, category }: AssetListProps) {
     });
   };
 
-  const isLoading_ = markAsCompleted.isPending || markAsImplemented.isPending || moveToPending.isPending || moveToCompleted.isPending || updateAsset.isPending;
+  const handleClaim = (id: string) => {
+    claimAsset.mutate(id, {
+      onSuccess: (updatedAsset) => {
+        if (selectedAsset && selectedAsset.id === id) {
+          // Re-fetch to get claimer info
+          setSelectedAsset({ ...selectedAsset, ...updatedAsset });
+        }
+      }
+    });
+  };
+
+  const handleUnclaim = (id: string) => {
+    unclaimAsset.mutate(id, {
+      onSuccess: (updatedAsset) => {
+        if (selectedAsset && selectedAsset.id === id) {
+          setSelectedAsset({ ...selectedAsset, ...updatedAsset, claimer: null });
+        }
+      }
+    });
+  };
+
+  const isLoading_ = markAsCompleted.isPending || markAsImplemented.isPending || moveToPending.isPending || moveToCompleted.isPending || updateAsset.isPending || claimAsset.isPending || unclaimAsset.isPending;
 
   return (
     <>
@@ -160,6 +181,8 @@ export function AssetList({ status, category }: AssetListProps) {
         onMoveToPending={(status === "completed" || status === "implemented") ? handleMoveToPending : undefined}
         onMoveToCompleted={status === "implemented" ? handleMoveToCompleted : undefined}
         onUpdate={handleUpdate}
+        onClaim={handleClaim}
+        onUnclaim={handleUnclaim}
         isTransitioning={isLoading_}
       />
     </>

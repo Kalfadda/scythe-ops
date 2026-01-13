@@ -307,25 +307,32 @@ export function ScheduleView() {
                   </button>
                 </div>
 
-                {selectedDateEvents.length === 0 ? (
+                {selectedDateEvents.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {selectedDateEvents.map((event) => (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        onEdit={handleEditEvent}
+                        onDelete={handleDeleteEvent}
+                      />
+                    ))}
+                  </div>
+                ) : (
                   <div
                     style={{
                       ...cardStyle,
-                      padding: 32,
+                      padding: 24,
                       textAlign: "center",
                     }}
                   >
-                    <CalendarDays
-                      style={{ width: 40, height: 40, color: "#d1d5db", margin: "0 auto 12px" }}
-                    />
-                    <p style={{ color: "#6b7280", margin: 0 }}>No events on this day</p>
+                    <p style={{ color: "#6b7280", margin: "0 0 12px" }}>No events on this day</p>
                     <button
                       onClick={() => {
                         setEditingEvent(null);
                         setIsFormOpen(true);
                       }}
                       style={{
-                        marginTop: 16,
                         padding: "8px 16px",
                         borderRadius: 6,
                         border: "1px solid #e5e5eb",
@@ -340,17 +347,25 @@ export function ScheduleView() {
                       Add Event
                     </button>
                   </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {selectedDateEvents.map((event) => (
-                      <EventCard
-                        key={event.id}
-                        event={event}
-                        onEdit={handleEditEvent}
-                        onDelete={handleDeleteEvent}
-                      />
-                    ))}
-                  </div>
+                )}
+
+                {/* Always show upcoming events below */}
+                {upcomingEvents.length > 0 && (
+                  <>
+                    <h3 style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", margin: "8px 0 0" }}>
+                      Upcoming
+                    </h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {upcomingEvents.slice(0, 5).map((event) => (
+                        <EventCard
+                          key={event.id}
+                          event={event}
+                          onEdit={handleEditEvent}
+                          onDelete={handleDeleteEvent}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
               </>
             ) : (

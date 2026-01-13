@@ -178,9 +178,66 @@ export function useAssetMutations() {
 
   const deleteAsset = useMutation({
     mutationFn: async (id: string) => {
+      // First, delete any events linked to this asset
+      const { error: eventError } = await supabase
+        .from("events")
+        .delete()
+        .eq("linked_asset_id", id);
+
+      if (eventError) {
+        console.warn("Failed to delete linked events:", eventError);
+        // Continue with asset deletion even if event deletion fails
+      }
+
+      // Then delete the asset
       const { error } = await supabase.from("assets").delete().eq("id", id);
 
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+
+  // Claim a task
+  const claimAsset = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: asset, error } = await supabase
+        .from("assets")
+        .update({
+          claimed_by: user.id,
+          claimed_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return asset;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+    },
+  });
+
+  // Unclaim a task
+  const unclaimAsset = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: asset, error } = await supabase
+        .from("assets")
+        .update({
+          claimed_by: null,
+          claimed_at: null,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return asset;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
@@ -195,5 +252,7 @@ export function useAssetMutations() {
     moveToPending,
     moveToCompleted,
     deleteAsset,
+    claimAsset,
+    unclaimAsset,
   };
 }

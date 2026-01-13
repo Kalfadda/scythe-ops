@@ -1,8 +1,28 @@
 import { motion } from "motion/react";
-import { Clock, User, X, Tag, Flag } from "lucide-react";
+import { Clock, User, X, Tag, Flag, UserCheck } from "lucide-react";
 import type { AssetWithCreator } from "../hooks/useAssets";
 import { getDaysUntilDelete } from "../hooks/useAssets";
 import { ASSET_CATEGORIES, ASSET_PRIORITIES } from "@/types/database";
+
+// Keyframes for the claimed glow effect
+const claimedGlowKeyframes = `
+@keyframes claimedGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.3), 0 0 16px rgba(124, 58, 237, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.5), 0 0 24px rgba(124, 58, 237, 0.25);
+  }
+}
+`;
+
+// Inject keyframes into document head if not already present
+if (typeof document !== 'undefined' && !document.getElementById('claimed-glow-keyframes')) {
+  const style = document.createElement('style');
+  style.id = 'claimed-glow-keyframes';
+  style.textContent = claimedGlowKeyframes;
+  document.head.appendChild(style);
+}
 
 interface AssetCardProps {
   asset: AssetWithCreator;
@@ -43,6 +63,8 @@ export function AssetCard({
   const priority = asset.priority ? ASSET_PRIORITIES[asset.priority] : null;
   const statusStyle = STATUS_STYLES[asset.status];
   const daysLeft = asset.status === "implemented" ? getDaysUntilDelete(asset.implemented_at) : null;
+  const isClaimed = !!asset.claimed_by;
+  const claimerName = asset.claimer?.display_name || asset.claimer?.email || null;
 
   return (
     <motion.div
@@ -63,13 +85,19 @@ export function AssetCard({
         style={{
           height: '100%',
           borderRadius: 12,
-          border: `1px solid ${category ? `${category.color}30` : '#e5e5eb'}`,
-          backgroundColor: category ? `${category.color}06` : '#ffffff',
-          padding: 20,
-          transition: 'all 0.2s',
+          border: isClaimed
+            ? '2px solid rgba(124, 58, 237, 0.5)'
+            : `1px solid ${category ? `${category.color}30` : '#e5e5eb'}`,
+          backgroundColor: isClaimed
+            ? 'rgba(124, 58, 237, 0.04)'
+            : (category ? `${category.color}06` : '#ffffff'),
+          padding: isClaimed ? 19 : 20, // Compensate for thicker border
+          transition: 'all 0.3s ease',
           boxSizing: 'border-box',
           boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
           cursor: onClick ? 'pointer' : 'default',
+          animation: isClaimed ? 'claimedGlow 2s ease-in-out infinite' : 'none',
+          position: 'relative',
         }}
       >
         {/* Header with badges */}
@@ -143,6 +171,29 @@ export function AssetCard({
                   <Flag style={{ width: 10, height: 10 }} />
                   {priority.label}
                 </span>
+              )}
+
+              {/* Claimed badge */}
+              {isClaimed && claimerName && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{
+                    borderRadius: 999,
+                    padding: '3px 8px',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    boxShadow: '0 2px 4px rgba(124, 58, 237, 0.3)',
+                  }}
+                >
+                  <UserCheck style={{ width: 10, height: 10 }} />
+                  {claimerName.split('@')[0]}
+                </motion.span>
               )}
             </div>
 

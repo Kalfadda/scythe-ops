@@ -6,6 +6,7 @@ export type AssetWithCreator = Asset & {
   creator: Pick<Profile, "display_name" | "email"> | null;
   completer: Pick<Profile, "display_name" | "email"> | null;
   implementer: Pick<Profile, "display_name" | "email"> | null;
+  claimer: Pick<Profile, "display_name" | "email"> | null;
 };
 
 export interface UseAssetsOptions {
@@ -31,7 +32,8 @@ export function useAssets(statusOrOptions?: AssetStatus | UseAssetsOptions) {
           *,
           creator:profiles!created_by(display_name, email),
           completer:profiles!completed_by(display_name, email),
-          implementer:profiles!implemented_by(display_name, email)
+          implementer:profiles!implemented_by(display_name, email),
+          claimer:profiles!claimed_by(display_name, email)
         `
         )
         .order("created_at", { ascending: false });
@@ -76,7 +78,8 @@ export function useAsset(id: string) {
           *,
           creator:profiles!created_by(display_name, email),
           completer:profiles!completed_by(display_name, email),
-          implementer:profiles!implemented_by(display_name, email)
+          implementer:profiles!implemented_by(display_name, email),
+          claimer:profiles!claimed_by(display_name, email)
         `
         )
         .eq("id", id)

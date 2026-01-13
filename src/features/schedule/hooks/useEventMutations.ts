@@ -107,10 +107,64 @@ export function useEventMutations() {
   });
 
   const updateEvent = useMutation({
-    mutationFn: async ({ id, ...data }: UpdateEventData) => {
+    mutationFn: async ({ id, auto_create_task, ...data }: UpdateEventData) => {
+      if (!user) throw new Error("Not authenticated");
+
+      // First, fetch the current event to check its state
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Determine the final type (use updated type or keep current)
+      const finalType = data.type ?? currentEvent.type;
+
+      // Check if we need to create a task:
+      // - auto_create_task is being set to true
+      // - The final type is deliverable
+      // - No task is already linked
+      let linkedAssetId = data.linked_asset_id;
+
+      if (
+        auto_create_task &&
+        finalType === "deliverable" &&
+        !currentEvent.linked_asset_id &&
+        !data.linked_asset_id
+      ) {
+        console.log("Auto-creating task from deliverable update...");
+        const { data: asset, error: assetError } = await supabase
+          .from("assets")
+          .insert({
+            name: data.title ?? currentEvent.title,
+            blurb: data.description ?? currentEvent.description ?? `Deliverable due: ${data.event_date ?? currentEvent.event_date}`,
+            status: "pending",
+            category: null,
+            priority: null,
+            created_by: user.id,
+          })
+          .select()
+          .single();
+
+        if (assetError) {
+          console.error("Failed to create task:", assetError);
+          throw assetError;
+        }
+
+        console.log("Task created:", asset);
+        linkedAssetId = asset.id;
+      }
+
+      // Now update the event
       const { data: event, error } = await supabase
         .from("events")
-        .update(data)
+        .update({
+          ...data,
+          auto_create_task: auto_create_task ?? currentEvent.auto_create_task,
+          linked_asset_id: linkedAssetId ?? currentEvent.linked_asset_id,
+        })
         .eq("id", id)
         .select()
         .single();
@@ -120,6 +174,7 @@ export function useEventMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 
