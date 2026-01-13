@@ -91,6 +91,29 @@ Click the **X** on any task card.
 
 ---
 
+## Changelog
+
+### v0.1.2
+- Added left sidebar navigation with Tasks and Modeling tabs
+
+### v0.1.1
+- Disabled auto-update artifacts temporarily
+- Silent error handling for update checks
+
+### v0.1.0
+- Added auto-update functionality
+- Auto version bump on build
+- Renamed binary to scytheops.exe
+- Security improvements (removed hardcoded credentials)
+
+### v0.0.1
+- Initial release
+- Task management with categories and priorities
+- Real-time updates
+- Admin panel for user management
+
+---
+
 ## For Devs
 
 Built with Tauri + React + TypeScript + Supabase.
