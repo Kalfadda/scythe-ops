@@ -63,8 +63,8 @@ export function AssetCard({
         style={{
           height: '100%',
           borderRadius: 12,
-          border: '1px solid #e5e5eb',
-          backgroundColor: '#ffffff',
+          border: `1px solid ${category ? `${category.color}30` : '#e5e5eb'}`,
+          backgroundColor: category ? `${category.color}06` : '#ffffff',
           padding: 20,
           transition: 'all 0.2s',
           boxSizing: 'border-box',

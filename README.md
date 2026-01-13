@@ -18,12 +18,12 @@ Internal task tracking tool for the team. Keep track of what needs to be done, w
 
 ### Adding a Task
 
-1. Click the purple **"Check In Asset"** button
+1. Click the purple **"Add New Task"** button
 2. Fill in the task name
 3. Add a description explaining what needs to be done
 4. Choose a **Category** (Art, Code, Audio, Design, Docs, Marketing, Infra, Other)
 5. Set the **Priority** (Low, Medium, High, Critical)
-6. Click **"Check In"**
+6. Click **"Add Task"**
 
 ### Viewing Tasks
 
@@ -96,6 +96,10 @@ Click the **X** on any task card.
 ---
 
 ## Changelog
+
+### v0.1.4
+- Subtle category color coding on task cards
+- Renamed "Check In Asset" to "Add New Task"
 
 ### v0.1.3
 - Three-stage task workflow: Pending → Completed → Implemented

@@ -4,6 +4,15 @@ All notable changes to Scythe Ops will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.4] - 2026-01-12
+
+### Added
+- Subtle category color coding on task cards (background tint based on category)
+
+### Changed
+- Renamed "Check In Asset" to "Add New Task" throughout the app
+- Updated form labels and placeholders to use task-focused language
+
 ## [0.1.3] - 2026-01-12
 
 ### Added

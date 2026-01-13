@@ -88,7 +88,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
               onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#7c3aed'}
             >
               <Plus style={{ marginRight: 8, width: 20, height: 20 }} />
-              Check In Asset
+              Add New Task
             </button>
           </motion.div>
         ) : (
@@ -116,7 +116,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                 padding: '16px 20px'
               }}>
                 <h3 style={{ fontSize: 18, fontWeight: 600, color: '#1e1e2e', margin: 0 }}>
-                  Check In New Asset
+                  Add New Task
                 </h3>
                 <button
                   onClick={handleCancel}
@@ -169,7 +169,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                       >
                         <Check style={{ width: 32, height: 32, color: '#16a34a' }} />
                       </motion.div>
-                      <p style={{ fontWeight: 500, color: '#1e1e2e', margin: 0 }}>Asset checked in!</p>
+                      <p style={{ fontWeight: 500, color: '#1e1e2e', margin: 0 }}>Task added!</p>
                     </motion.div>
                   ) : (
                     <motion.form
@@ -186,11 +186,11 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                           color: '#4b5563',
                           marginBottom: 8
                         }}>
-                          Asset Name
+                          Task Name
                         </label>
                         <input
                           id="name"
-                          placeholder="e.g., Player Character Model"
+                          placeholder="e.g., Implement login screen"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           required
@@ -216,11 +216,11 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                           color: '#4b5563',
                           marginBottom: 8
                         }}>
-                          Description / Design Goal
+                          Description
                         </label>
                         <textarea
                           id="blurb"
-                          placeholder="What is this asset for? Why was it created?"
+                          placeholder="What needs to be done? Any details or requirements?"
                           value={blurb}
                           onChange={(e) => setBlurb(e.target.value)}
                           rows={3}
@@ -400,7 +400,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                           ) : (
                             <Plus style={{ marginRight: 8, width: 16, height: 16 }} />
                           )}
-                          Check In
+                          Add Task
                         </button>
                       </div>
                     </motion.form>
