@@ -97,6 +97,10 @@ Click the **X** on any task card.
 
 ## Changelog
 
+### v0.1.5
+- Added Schedule tab (coming soon)
+- Improved "Add New Task" form layout - more spacious design
+
 ### v0.1.4
 - Subtle category color coding on task cards
 - Renamed "Check In Asset" to "Add New Task"

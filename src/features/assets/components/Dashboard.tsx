@@ -5,10 +5,10 @@ import { useAssetRealtime } from "../hooks/useAssetRealtime";
 import { AssetList } from "./AssetList";
 import { AssetForm } from "./AssetForm";
 import { UpdateNotification } from "@/components/UpdateNotification";
-import { Box, LogOut, Settings, Clock, CheckCircle2, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info } from "lucide-react";
+import { Box, LogOut, Settings, Clock, CheckCircle2, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays } from "lucide-react";
 import { ASSET_CATEGORIES, type AssetCategory, type AssetStatus } from "@/types/database";
 
-type MainView = "tasks" | "modeling";
+type MainView = "tasks" | "schedule" | "modeling";
 
 export function Dashboard() {
   const { profile, signOut } = useAuth();
@@ -45,6 +45,7 @@ export function Dashboard() {
 
   const sidebarItems: { id: MainView; label: string; icon: React.ReactNode }[] = [
     { id: "tasks", label: "Tasks", icon: <ListTodo style={{ width: 20, height: 20 }} /> },
+    { id: "schedule", label: "Schedule", icon: <CalendarDays style={{ width: 20, height: 20 }} /> },
     { id: "modeling", label: "Modeling", icon: <Boxes style={{ width: 20, height: 20 }} /> },
   ];
 
@@ -194,7 +195,7 @@ export function Dashboard() {
 
       {/* Main Content Area */}
       <div style={{ marginLeft: 220, flex: 1 }}>
-        {mainView === "tasks" ? (
+        {mainView === "tasks" && (
           <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
             {/* Top Bar */}
             <div style={{
@@ -364,7 +365,34 @@ export function Dashboard() {
             {/* Asset List */}
             <AssetList status={activeTab} category={selectedCategory} />
           </main>
-        ) : (
+        )}
+
+        {mainView === "schedule" && (
+          <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
+            {/* Schedule Stub */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 400,
+              backgroundColor: '#fff',
+              borderRadius: 12,
+              border: '2px dashed #e5e5eb',
+              padding: 48
+            }}>
+              <CalendarDays style={{ width: 64, height: 64, color: '#d1d5db', marginBottom: 24 }} />
+              <h2 style={{ fontSize: 24, fontWeight: 600, color: '#1e1e2e', marginBottom: 8 }}>
+                Schedule
+              </h2>
+              <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', maxWidth: 400 }}>
+                Coming soon. Plan and organize your tasks with calendar-based scheduling.
+              </p>
+            </div>
+          </main>
+        )}
+
+        {mainView === "modeling" && (
           <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
             {/* Modeling Stub */}
             <div style={{

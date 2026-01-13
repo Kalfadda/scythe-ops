@@ -4,6 +4,17 @@ All notable changes to Scythe Ops will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.5] - 2026-01-12
+
+### Added
+- Schedule tab in sidebar (stub with coming soon placeholder)
+
+### Changed
+- Improved "Add New Task" form layout with more spacious design
+- Increased form width and padding throughout
+- Taller description textarea (5 rows)
+- Better spacing between form elements
+
 ## [0.1.4] - 2026-01-12
 
 ### Added

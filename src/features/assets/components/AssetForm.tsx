@@ -101,7 +101,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
           >
             <div style={{
               width: '100%',
-              maxWidth: 400,
+              maxWidth: 500,
               borderRadius: 12,
               border: '1px solid #e5e5eb',
               backgroundColor: '#ffffff',
@@ -113,7 +113,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 borderBottom: '1px solid #e5e5eb',
-                padding: '16px 20px'
+                padding: '20px 28px'
               }}>
                 <h3 style={{ fontSize: 18, fontWeight: 600, color: '#1e1e2e', margin: 0 }}>
                   Add New Task
@@ -137,7 +137,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
               </div>
 
               {/* Content */}
-              <div style={{ padding: 20 }}>
+              <div style={{ padding: '24px 28px 28px' }}>
                 <AnimatePresence mode="wait">
                   {showSuccess ? (
                     <motion.div
@@ -178,13 +178,13 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                       animate={{ opacity: 1 }}
                       onSubmit={handleSubmit}
                     >
-                      <div style={{ marginBottom: 16 }}>
+                      <div style={{ marginBottom: 20 }}>
                         <label htmlFor="name" style={{
                           display: 'block',
                           fontSize: 14,
                           fontWeight: 500,
                           color: '#4b5563',
-                          marginBottom: 8
+                          marginBottom: 10
                         }}>
                           Task Name
                         </label>
@@ -197,7 +197,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                           autoFocus
                           style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '12px 14px',
                             borderRadius: 8,
                             border: '1px solid #e5e5eb',
                             backgroundColor: '#f9fafb',
@@ -208,13 +208,13 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                           }}
                         />
                       </div>
-                      <div style={{ marginBottom: 16 }}>
+                      <div style={{ marginBottom: 20 }}>
                         <label htmlFor="blurb" style={{
                           display: 'block',
                           fontSize: 14,
                           fontWeight: 500,
                           color: '#4b5563',
-                          marginBottom: 8
+                          marginBottom: 10
                         }}>
                           Description
                         </label>
@@ -223,10 +223,10 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                           placeholder="What needs to be done? Any details or requirements?"
                           value={blurb}
                           onChange={(e) => setBlurb(e.target.value)}
-                          rows={3}
+                          rows={5}
                           style={{
                             width: '100%',
-                            padding: '10px 12px',
+                            padding: '12px 14px',
                             borderRadius: 8,
                             border: '1px solid #e5e5eb',
                             backgroundColor: '#f9fafb',
@@ -235,13 +235,14 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                             outline: 'none',
                             resize: 'vertical',
                             fontFamily: 'inherit',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            minHeight: 100
                           }}
                         />
                       </div>
 
                       {/* Category and Priority row */}
-                      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                      <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
                         {/* Category Select */}
                         <div style={{ flex: 1 }}>
                           <label htmlFor="category" style={{
@@ -251,7 +252,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                             fontSize: 14,
                             fontWeight: 500,
                             color: '#4b5563',
-                            marginBottom: 8
+                            marginBottom: 10
                           }}>
                             <Tag style={{ width: 14, height: 14 }} />
                             Category
@@ -263,7 +264,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                               onChange={(e) => setCategory(e.target.value as AssetCategory | "")}
                               style={{
                                 width: '100%',
-                                padding: '10px 32px 10px 12px',
+                                padding: '12px 36px 12px 14px',
                                 borderRadius: 8,
                                 border: '1px solid #e5e5eb',
                                 backgroundColor: '#f9fafb',
@@ -282,7 +283,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                             </select>
                             <ChevronDown style={{
                               position: 'absolute',
-                              right: 10,
+                              right: 12,
                               top: '50%',
                               transform: 'translateY(-50%)',
                               width: 16,
@@ -302,7 +303,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                             fontSize: 14,
                             fontWeight: 500,
                             color: '#4b5563',
-                            marginBottom: 8
+                            marginBottom: 10
                           }}>
                             <Flag style={{ width: 14, height: 14 }} />
                             Priority
@@ -314,7 +315,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                               onChange={(e) => setPriority(e.target.value as AssetPriority | "")}
                               style={{
                                 width: '100%',
-                                padding: '10px 32px 10px 12px',
+                                padding: '12px 36px 12px 14px',
                                 borderRadius: 8,
                                 border: '1px solid #e5e5eb',
                                 backgroundColor: '#f9fafb',
@@ -333,7 +334,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                             </select>
                             <ChevronDown style={{
                               position: 'absolute',
-                              right: 10,
+                              right: 12,
                               top: '50%',
                               transform: 'translateY(-50%)',
                               width: 16,
@@ -347,24 +348,24 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
 
                       {error && (
                         <div style={{
-                          padding: '10px 12px',
+                          padding: '12px 14px',
                           borderRadius: 8,
                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
                           border: '1px solid rgba(239, 68, 68, 0.3)',
                           color: '#f87171',
                           fontSize: 14,
-                          marginBottom: 16
+                          marginBottom: 20
                         }}>
                           {error}
                         </div>
                       )}
-                      <div style={{ display: 'flex', gap: 12, paddingTop: 8 }}>
+                      <div style={{ display: 'flex', gap: 14, paddingTop: 12 }}>
                         <button
                           type="button"
                           onClick={handleCancel}
                           style={{
                             flex: 1,
-                            padding: '10px 16px',
+                            padding: '12px 18px',
                             borderRadius: 8,
                             border: '1px solid #e5e5eb',
                             backgroundColor: 'transparent',
@@ -384,7 +385,7 @@ export function AssetForm({ onSuccess }: AssetFormProps) {
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '10px 16px',
+                            padding: '12px 18px',
                             borderRadius: 8,
                             border: 'none',
                             backgroundColor: createAsset.isPending || !name.trim() ? '#a78bfa' : '#7c3aed',
