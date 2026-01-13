@@ -1,6 +1,6 @@
 # Scythe Ops
 
-Internal task tracking tool for the team. Keep track of what needs to be done, who's working on what, and what's been completed.
+Dev team management tool. Track tasks, schedule milestones, and coordinate who's working on what.
 
 ![Scythe Ops](screenshot.png)
 
@@ -10,40 +10,50 @@ Internal task tracking tool for the team. Keep track of what needs to be done, w
 
 1. Run `scytheops.exe`
 2. Sign in with your team email
-3. Start tracking tasks!
+3. Start tracking!
 
 ---
 
-## How to Use
+## Features
 
-### Adding a Task
+### Tasks
+Manage work items through a three-stage workflow.
 
-1. Click the purple **"Add New Task"** button
-2. Fill in the task name
-3. Add a description explaining what needs to be done
-4. Choose a **Category** (Art, Code, Audio, Design, Docs, Marketing, Infra, Other)
-5. Set the **Priority** (Low, Medium, High, Critical)
-6. Click **"Add Task"**
+- **Pending** - Work that needs to be done
+- **Completed** - Done but awaiting verification
+- **Implemented** - Archived (auto-deletes after 7 days)
 
-### Viewing Tasks
+**Claiming**: Click any task and hit "Claim" to signal you're working on it. Claimed tasks glow purple and show your name.
 
-- **Pending tab** - Tasks that still need to be done
-- **Completed tab** - Tasks that are done but need review/verification
-- **Implemented tab** - Archived tasks (auto-deleted after 7 days)
-- **Filter buttons** - Click any category to filter the list
+**Categories**: Art, Code, Audio, Design, Docs, Marketing, Infra, Other
 
-### Task Workflow
+**Priorities**: Low, Medium, High, Critical
 
-Tasks flow through three stages: **Pending → Completed → Implemented**
+### Schedule
+Plan milestones and deadlines with a calendar view.
 
-1. Click on a task card to open details
-2. Use **"Mark Completed"** when work is done
-3. Use **"Mark Implemented"** to archive (auto-deletes in 7 days)
-4. Use **"Back to..."** buttons if you need to revert a task
+- **Milestones** - Important dates with countdown timers
+- **Deliverables** - Deadlines that can auto-create linked tasks
+- **Labels** - Historic markers for reference
 
-### Deleting a Task
+Switch between Calendar and List views. Filter by event type.
 
-Click the **X** on any task card.
+### Tools
+- **Compare** - Side-by-side stats for different task categories
+
+### Admin
+User management panel for team leads. Blocking a user automatically releases all their claimed tasks.
+
+---
+
+## Task Workflow
+
+1. Click **"Add New Task"** to create a task
+2. Fill in name, description, category, and priority
+3. Click a task card to view details, edit, or claim it
+4. Use **"Mark Completed"** when work is done
+5. Use **"Mark Implemented"** to archive
+6. Use **"Back to..."** buttons to revert if needed
 
 ---
 
@@ -62,104 +72,18 @@ Click the **X** on any task card.
 
 ---
 
-## Priority Levels
-
-- **Low** - Nice to have, no rush
-- **Medium** - Should get done soon
-- **High** - Important, prioritize this
-- **Critical** - Drop everything, fix now
-
----
-
-## Tips
-
-- Use clear, descriptive task names
-- Add enough detail in descriptions so anyone can pick it up
-- Set realistic priorities (not everything is critical!)
-- Check the Implemented tab to see what's been done
-
----
-
 ## Troubleshooting
 
 **Can't sign in?**
 - Check your email/password
-- Try creating a new account if you haven't already
+- Create a new account if needed
 
-**Tasks not showing up?**
-- Check your internet connection
-- Try refreshing (close and reopen the app)
+**Tasks not showing?**
+- Check internet connection
+- Restart the app
 
-**Something else broken?**
+**Something broken?**
 - Ping the team lead
-
----
-
-## Changelog
-
-### v0.1.11
-- Added task claim system - users can claim/unclaim tasks to signal they're working on them
-- Claimed tasks have animated purple glow and badge showing who claimed
-- Claim/Release buttons in task details modal
-- Blocked users automatically have their claimed tasks released
-- Renamed app subtitle to "Dev Team Management"
-
-### v0.1.10
-- Fixed edge case: editing event type to deliverable with "create task" now works correctly
-
-### v0.1.9
-- Added database heartbeat on app startup to prevent Supabase free tier from pausing
-
-### v0.1.8
-- Deleting a task now also deletes linked calendar events
-- Upcoming events sidebar now always shows up to 5 events
-
-### v0.1.7
-- Added edit functionality to task details modal
-- Fixed long descriptions causing horizontal overflow in schedule events
-- Fixed auto-create task checkbox now properly creates tasks from deliverables
-
-### v0.1.6
-- Added Tools dropdown in sidebar with Compare tool
-- Compare tool allows side-by-side comparison of task categories
-- Added full Schedule feature with calendar and event management
-- Three event types: Milestones (with countdown), Deliverables (linked to tasks), Labels (historic markers)
-- Calendar view with month navigation and event indicators
-- List view for chronological event browsing
-- Event filtering by type
-- Auto-create task option for deliverable events
-
-### v0.1.5
-- Added Schedule tab (coming soon)
-- Improved "Add New Task" form layout - more spacious design
-
-### v0.1.4
-- Subtle category color coding on task cards
-- Renamed "Check In Asset" to "Add New Task"
-
-### v0.1.3
-- Three-stage task workflow: Pending → Completed → Implemented
-- Tasks can be moved forward and backward between stages
-- Implemented tasks auto-delete after 7 days
-
-### v0.1.2
-- Added left sidebar navigation with Tasks and Modeling tabs
-
-### v0.1.1
-- Disabled auto-update artifacts temporarily
-- Silent error handling for update checks
-
-### v0.1.0
-- Added auto-update functionality
-- Auto version bump on build
-- Renamed binary to scytheops.exe
-- Security improvements (removed hardcoded credentials)
-
-### v0.0.1
-- Initial release
-- Task management with categories and priorities
-- Real-time updates
-- Admin panel for user management
 
 ---
 

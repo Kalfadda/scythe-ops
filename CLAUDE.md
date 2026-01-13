@@ -15,16 +15,78 @@ For manual builds without version bump, use `npm run tauri build`.
 - **Backend**: Tauri (Rust)
 - **Database**: Supabase (auth + PostgreSQL)
 - **State Management**: Zustand (auth) + TanStack Query (data fetching)
-- **UI**: Custom components + Lucide icons + Framer Motion
+- **UI**: Custom inline CSS + Lucide icons + Framer Motion
+
+## Feature Overview
+
+### Tasks (Assets)
+- Three-stage workflow: Pending → Completed → Implemented
+- Categories: Art, Code, Audio, Design, Docs, Marketing, Infra, Other
+- Priorities: Low, Medium, High, Critical
+- Claim system: Users can claim/unclaim tasks to signal ownership
+- Implemented tasks auto-delete after 7 days
+- Full CRUD with edit support in detail modal
+
+### Schedule
+- Three event types: Milestone, Deliverable, Label
+- Calendar view with month navigation
+- List view for chronological browsing
+- Deliverables can auto-create linked tasks
+- Deleting a task removes linked calendar events
+
+### Tools
+- Compare tool: Side-by-side comparison of task categories
+
+### Admin
+- User management panel
+- Block/unblock users (auto-unclaims their tasks)
 
 ## Key Files
 
-- `src/features/auth/hooks/useAuth.ts` - Authentication hook (login, logout, profile fetching)
-- `src/stores/authStore.ts` - Zustand store for auth state
-- `src/features/auth/components/AuthPage.tsx` - Login/Register page
+### Auth
+- `src/features/auth/hooks/useAuth.ts` - Authentication hook
+- `src/stores/authStore.ts` - Zustand auth state
+- `src/features/auth/components/AuthPage.tsx` - Login/Register
 - `src/features/auth/components/ProtectedRoute.tsx` - Route guard
-- `src/features/assets/components/Dashboard.tsx` - Main dashboard
-- `src/lib/supabase.ts` - Supabase client configuration
+
+### Tasks
+- `src/features/assets/components/Dashboard.tsx` - Main dashboard with sidebar
+- `src/features/assets/components/AssetList.tsx` - Task list with filtering
+- `src/features/assets/components/AssetCard.tsx` - Task card with claim visuals
+- `src/features/assets/components/AssetDetailModal.tsx` - Task detail/edit modal
+- `src/features/assets/hooks/useAssets.ts` - Task queries (includes claimer join)
+- `src/features/assets/hooks/useAssetMutations.ts` - Task mutations (CRUD, claim/unclaim)
+
+### Schedule
+- `src/features/schedule/components/ScheduleView.tsx` - Main schedule view
+- `src/features/schedule/components/Calendar.tsx` - Calendar component
+- `src/features/schedule/components/EventForm.tsx` - Event create/edit form
+- `src/features/schedule/components/EventCard.tsx` - Event card display
+- `src/features/schedule/hooks/useEvents.ts` - Event queries
+- `src/features/schedule/hooks/useEventMutations.ts` - Event mutations
+
+### Tools
+- `src/features/tools/components/Compare.tsx` - Category comparison tool
+
+### Utilities
+- `src/lib/supabase.ts` - Supabase client
+- `src/lib/heartbeat.ts` - Database ping to prevent free tier pause
+
+## Database Schema
+
+### profiles
+- id, email, display_name, is_blocked, blocked_at, blocked_reason, created_at, updated_at
+
+### assets (tasks)
+- id, name, blurb, status, category, priority
+- created_by, completed_by, completed_at, implemented_by, implemented_at
+- claimed_by, claimed_at
+- created_at, updated_at
+
+### events
+- id, type, title, description, event_date, event_time
+- visibility, linked_asset_id, auto_create_task
+- created_by, created_at, updated_at
 
 ## Supabase Configuration
 
@@ -35,53 +97,37 @@ In Supabase Dashboard:
 2. Turn **OFF** "Confirm email"
 3. Save
 
-This is required because Supabase email links redirect to `localhost:3000` which doesn't exist for a desktop app.
+## Database Migrations
 
-## Auth System Notes
+**IMPORTANT:** Whenever you modify `src/types/database.ts`, you MUST:
+1. Generate the corresponding SQL migration
+2. Prompt the user to run it in Supabase SQL Editor
+3. Provide clear step-by-step instructions
 
-- Uses module-level flags (`initStarted`, `profileFetchId`) to prevent race conditions
-- `signIn()` directly updates state after success (don't rely solely on `onAuthStateChange`)
-- Auth listener skips `TOKEN_REFRESHED` and `INITIAL_SESSION` events to avoid redundant fetches
-- Profile is fetched once per sign-in, tracked via incrementing fetch ID
+The app will fail if TypeScript types don't match the database schema.
 
 ## Auto-Updates
 
 The app checks for updates on launch using GitHub Releases.
 
-### Creating a Release (triggers auto-update for users)
+### Creating a Release
 
-1. Set the signing key environment variable:
-   ```
-   set TAURI_SIGNING_PRIVATE_KEY=<contents of src-tauri/.tauri-updater-key>
-   ```
-2. Build with auto version bump: `npm run release`
-3. Create a GitHub Release with the new version tag (e.g., `v0.1.2`)
-4. Upload these files from `src-tauri/target/release/bundle/`:
-   - `nsis/Scythe Ops_x.x.x_x64-setup.exe`
-   - `nsis/Scythe Ops_x.x.x_x64-setup.exe.sig`
-   - `msi/Scythe Ops_x.x.x_x64_en-US.msi`
-   - `msi/Scythe Ops_x.x.x_x64_en-US.msi.sig`
-5. Also upload the `latest.json` file from `src-tauri/target/release/bundle/`
-
-Users will automatically receive the update next time they launch the app.
+1. Set signing key: `set TAURI_SIGNING_PRIVATE_KEY=<contents of src-tauri/.tauri-updater-key>`
+2. Build: `npm run release`
+3. Create GitHub Release with version tag (e.g., `v0.1.11`)
+4. Upload from `src-tauri/target/release/bundle/`:
+   - `nsis/Scythe Ops_x.x.x_x64-setup.exe` + `.sig`
+   - `msi/Scythe Ops_x.x.x_x64_en-US.msi` + `.sig`
+   - `latest.json`
 
 ### Signing Key Location
-
-- Private key: `src-tauri/.tauri-updater-key` (KEEP SECRET, do not commit!)
-- Public key: embedded in `tauri.conf.json`
-
-## Database Migrations
-
-**IMPORTANT:** Whenever you modify `src/types/database.ts` (adding columns, changing types, adding enum values), you MUST:
-
-1. Generate the corresponding SQL migration
-2. Prompt the user to run it in Supabase SQL Editor
-3. Provide clear step-by-step instructions
-
-The app will fail to load data if the TypeScript types don't match the actual database schema.
+- Private: `src-tauri/.tauri-updater-key` (SECRET - do not commit!)
+- Public: embedded in `tauri.conf.json`
 
 ## Common Patterns
 
-- Auth state flows through Zustand store, accessed via `useAuth()` hook
-- Protected routes redirect to `/login` when `!user`
-- Assets use TanStack Query with real-time subscriptions via `useAssetRealtime()`
+- Auth state via Zustand, accessed with `useAuthStore()`
+- Data fetching via TanStack Query hooks
+- Protected routes redirect to `/login` when no user
+- Inline CSS styles (not Tailwind) for all components
+- Feature-based folder structure: `src/features/<feature>/components|hooks`
