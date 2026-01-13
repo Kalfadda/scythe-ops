@@ -1,29 +1,55 @@
 import { motion, AnimatePresence } from "motion/react";
-import { X, User, Clock, CheckCircle2, AlertCircle, Tag, Flag } from "lucide-react";
+import { X, User, Clock, CheckCircle2, Tag, Flag, ArrowLeft, ArrowRight, Archive } from "lucide-react";
 import type { AssetWithCreator } from "../hooks/useAssets";
+import { getDaysUntilDelete } from "../hooks/useAssets";
 import { ASSET_CATEGORIES, ASSET_PRIORITIES } from "@/types/database";
 
 interface AssetDetailModalProps {
   asset: AssetWithCreator | null;
   isOpen: boolean;
   onClose: () => void;
+  onMarkCompleted?: (id: string) => void;
   onMarkImplemented?: (id: string) => void;
-  isMarkingImplemented?: boolean;
+  onMoveToPending?: (id: string) => void;
+  onMoveToCompleted?: (id: string) => void;
+  isTransitioning?: boolean;
 }
+
+const STATUS_STYLES = {
+  pending: {
+    bg: 'rgba(202, 138, 4, 0.15)',
+    color: '#b45309',
+    label: 'Pending'
+  },
+  completed: {
+    bg: 'rgba(59, 130, 246, 0.15)',
+    color: '#2563eb',
+    label: 'Completed'
+  },
+  implemented: {
+    bg: 'rgba(22, 163, 74, 0.15)',
+    color: '#16a34a',
+    label: 'Implemented'
+  }
+};
 
 export function AssetDetailModal({
   asset,
   isOpen,
   onClose,
+  onMarkCompleted,
   onMarkImplemented,
-  isMarkingImplemented,
+  onMoveToPending,
+  onMoveToCompleted,
+  isTransitioning,
 }: AssetDetailModalProps) {
   if (!asset) return null;
 
-  const isPending = asset.status === "pending";
   const creatorName = asset.creator?.display_name || asset.creator?.email || "Unknown";
   const category = asset.category ? ASSET_CATEGORIES[asset.category] : null;
   const priority = asset.priority ? ASSET_PRIORITIES[asset.priority] : null;
+  const statusStyle = STATUS_STYLES[asset.status];
+  const daysLeft = asset.status === "implemented" ? getDaysUntilDelete(asset.implemented_at) : null;
 
   return (
     <AnimatePresence>
@@ -93,11 +119,25 @@ export function AssetDetailModal({
                     borderRadius: 999,
                     fontSize: 12,
                     fontWeight: 500,
-                    backgroundColor: isPending ? 'rgba(202, 138, 4, 0.15)' : 'rgba(22, 163, 74, 0.15)',
-                    color: isPending ? '#b45309' : '#16a34a',
+                    backgroundColor: statusStyle.bg,
+                    color: statusStyle.color,
                   }}>
-                    {isPending ? "Pending" : "Implemented"}
+                    {statusStyle.label}
                   </span>
+
+                  {/* Days until auto-delete badge for implemented */}
+                  {daysLeft !== null && (
+                    <span style={{
+                      padding: '4px 10px',
+                      borderRadius: 999,
+                      fontSize: 12,
+                      fontWeight: 500,
+                      backgroundColor: daysLeft <= 2 ? 'rgba(220, 38, 38, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                      color: daysLeft <= 2 ? '#dc2626' : '#6b7280',
+                    }}>
+                      {daysLeft === 0 ? 'Deleting soon' : `Auto-deletes in ${daysLeft}d`}
+                    </span>
+                  )}
 
                   {/* Category badge */}
                   {category && (
@@ -253,8 +293,55 @@ export function AssetDetailModal({
                   </p>
                 </div>
 
+                {/* Completed info */}
+                {(asset.status === "completed" || asset.status === "implemented") && asset.completer && (
+                  <>
+                    <div style={{
+                      backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                      borderRadius: 10,
+                      padding: 14,
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginBottom: 6,
+                        color: '#2563eb',
+                      }}>
+                        <CheckCircle2 style={{ width: 14, height: 14 }} />
+                        <span style={{ fontSize: 12, fontWeight: 500 }}>Completed by</span>
+                      </div>
+                      <p style={{ fontSize: 14, color: '#1e1e2e', fontWeight: 500, margin: 0 }}>
+                        {asset.completer.display_name || asset.completer.email}
+                      </p>
+                    </div>
+
+                    {asset.completed_at && (
+                      <div style={{
+                        backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                        borderRadius: 10,
+                        padding: 14,
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          marginBottom: 6,
+                          color: '#2563eb',
+                        }}>
+                          <Clock style={{ width: 14, height: 14 }} />
+                          <span style={{ fontSize: 12, fontWeight: 500 }}>Completed on</span>
+                        </div>
+                        <p style={{ fontSize: 14, color: '#1e1e2e', fontWeight: 500, margin: 0 }}>
+                          {formatFullDate(asset.completed_at)}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 {/* Implemented info */}
-                {!isPending && asset.implementer && (
+                {asset.status === "implemented" && asset.implementer && (
                   <>
                     <div style={{
                       backgroundColor: 'rgba(22, 163, 74, 0.08)',
@@ -268,7 +355,7 @@ export function AssetDetailModal({
                         marginBottom: 6,
                         color: '#16a34a',
                       }}>
-                        <CheckCircle2 style={{ width: 14, height: 14 }} />
+                        <Archive style={{ width: 14, height: 14 }} />
                         <span style={{ fontSize: 12, fontWeight: 500 }}>Implemented by</span>
                       </div>
                       <p style={{ fontSize: 14, color: '#1e1e2e', fontWeight: 500, margin: 0 }}>
@@ -290,7 +377,7 @@ export function AssetDetailModal({
                           color: '#16a34a',
                         }}>
                           <Clock style={{ width: 14, height: 14 }} />
-                          <span style={{ fontSize: 12, fontWeight: 500 }}>Completed</span>
+                          <span style={{ fontSize: 12, fontWeight: 500 }}>Implemented on</span>
                         </div>
                         <p style={{ fontSize: 14, color: '#1e1e2e', fontWeight: 500, margin: 0 }}>
                           {formatFullDate(asset.implemented_at)}
@@ -302,35 +389,118 @@ export function AssetDetailModal({
               </div>
             </div>
 
-            {/* Footer with action */}
-            {isPending && onMarkImplemented && (
+            {/* Footer with actions */}
+            {(onMarkCompleted || onMarkImplemented || onMoveToPending || onMoveToCompleted) && (
               <div style={{
                 padding: '16px 24px',
                 borderTop: '1px solid #e5e5eb',
                 backgroundColor: '#fafafa',
+                display: 'flex',
+                gap: 12,
               }}>
-                <button
-                  onClick={() => onMarkImplemented(asset.id)}
-                  disabled={isMarkingImplemented}
-                  style={{
-                    width: '100%',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '12px 20px',
-                    borderRadius: 10,
-                    border: 'none',
-                    backgroundColor: isMarkingImplemented ? '#a78bfa' : '#7c3aed',
-                    color: '#fff',
-                    fontSize: 15,
-                    fontWeight: 600,
-                    cursor: isMarkingImplemented ? 'not-allowed' : 'pointer',
-                    opacity: isMarkingImplemented ? 0.7 : 1,
-                  }}
-                >
-                  <CheckCircle2 style={{ marginRight: 8, width: 18, height: 18 }} />
-                  Mark as Implemented
-                </button>
+                {/* Back buttons */}
+                {onMoveToPending && (
+                  <button
+                    onClick={() => onMoveToPending(asset.id)}
+                    disabled={isTransitioning}
+                    style={{
+                      flex: 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '12px 20px',
+                      borderRadius: 10,
+                      border: '1px solid #e5e5eb',
+                      backgroundColor: '#fff',
+                      color: '#6b7280',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                      opacity: isTransitioning ? 0.7 : 1,
+                    }}
+                  >
+                    <ArrowLeft style={{ marginRight: 8, width: 16, height: 16 }} />
+                    Back to Pending
+                  </button>
+                )}
+
+                {onMoveToCompleted && (
+                  <button
+                    onClick={() => onMoveToCompleted(asset.id)}
+                    disabled={isTransitioning}
+                    style={{
+                      flex: 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '12px 20px',
+                      borderRadius: 10,
+                      border: '1px solid #e5e5eb',
+                      backgroundColor: '#fff',
+                      color: '#6b7280',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                      opacity: isTransitioning ? 0.7 : 1,
+                    }}
+                  >
+                    <ArrowLeft style={{ marginRight: 8, width: 16, height: 16 }} />
+                    Back to Completed
+                  </button>
+                )}
+
+                {/* Forward buttons */}
+                {onMarkCompleted && (
+                  <button
+                    onClick={() => onMarkCompleted(asset.id)}
+                    disabled={isTransitioning}
+                    style={{
+                      flex: 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '12px 20px',
+                      borderRadius: 10,
+                      border: 'none',
+                      backgroundColor: isTransitioning ? '#93c5fd' : '#3b82f6',
+                      color: '#fff',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                      opacity: isTransitioning ? 0.7 : 1,
+                    }}
+                  >
+                    <CheckCircle2 style={{ marginRight: 8, width: 16, height: 16 }} />
+                    Mark Completed
+                    <ArrowRight style={{ marginLeft: 8, width: 16, height: 16 }} />
+                  </button>
+                )}
+
+                {onMarkImplemented && (
+                  <button
+                    onClick={() => onMarkImplemented(asset.id)}
+                    disabled={isTransitioning}
+                    style={{
+                      flex: 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '12px 20px',
+                      borderRadius: 10,
+                      border: 'none',
+                      backgroundColor: isTransitioning ? '#86efac' : '#16a34a',
+                      color: '#fff',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                      opacity: isTransitioning ? 0.7 : 1,
+                    }}
+                  >
+                    <Archive style={{ marginRight: 8, width: 16, height: 16 }} />
+                    Mark Implemented
+                    <ArrowRight style={{ marginLeft: 8, width: 16, height: 16 }} />
+                  </button>
+                )}
               </div>
             )}
             </motion.div>

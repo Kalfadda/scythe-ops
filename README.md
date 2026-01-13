@@ -28,14 +28,18 @@ Internal task tracking tool for the team. Keep track of what needs to be done, w
 ### Viewing Tasks
 
 - **Pending tab** - Tasks that still need to be done
-- **Implemented tab** - Completed tasks
+- **Completed tab** - Tasks that are done but need review/verification
+- **Implemented tab** - Archived tasks (auto-deleted after 7 days)
 - **Filter buttons** - Click any category to filter the list
 
-### Completing a Task
+### Task Workflow
+
+Tasks flow through three stages: **Pending → Completed → Implemented**
 
 1. Click on a task card to open details
-2. Review the info
-3. Click **"Mark as Implemented"**
+2. Use **"Mark Completed"** when work is done
+3. Use **"Mark Implemented"** to archive (auto-deletes in 7 days)
+4. Use **"Back to..."** buttons if you need to revert a task
 
 ### Deleting a Task
 
@@ -92,6 +96,11 @@ Click the **X** on any task card.
 ---
 
 ## Changelog
+
+### v0.1.3
+- Three-stage task workflow: Pending → Completed → Implemented
+- Tasks can be moved forward and backward between stages
+- Implemented tasks auto-delete after 7 days
 
 ### v0.1.2
 - Added left sidebar navigation with Tasks and Modeling tabs

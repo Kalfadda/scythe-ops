@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Clock, User, X, Tag, Flag } from "lucide-react";
 import type { AssetWithCreator } from "../hooks/useAssets";
+import { getDaysUntilDelete } from "../hooks/useAssets";
 import { ASSET_CATEGORIES, ASSET_PRIORITIES } from "@/types/database";
 
 interface AssetCardProps {
@@ -11,6 +12,24 @@ interface AssetCardProps {
   isDeleting?: boolean;
 }
 
+const STATUS_STYLES = {
+  pending: {
+    bg: 'rgba(202, 138, 4, 0.15)',
+    color: '#b45309',
+    label: 'Pending'
+  },
+  completed: {
+    bg: 'rgba(59, 130, 246, 0.15)',
+    color: '#2563eb',
+    label: 'Completed'
+  },
+  implemented: {
+    bg: 'rgba(22, 163, 74, 0.15)',
+    color: '#16a34a',
+    label: 'Implemented'
+  }
+};
+
 export function AssetCard({
   asset,
   index,
@@ -20,9 +39,10 @@ export function AssetCard({
 }: AssetCardProps) {
   const creatorName =
     asset.creator?.display_name || asset.creator?.email || "Unknown";
-  const isPending = asset.status === "pending";
   const category = asset.category ? ASSET_CATEGORIES[asset.category] : null;
   const priority = asset.priority ? ASSET_PRIORITIES[asset.priority] : null;
+  const statusStyle = STATUS_STYLES[asset.status];
+  const daysLeft = asset.status === "implemented" ? getDaysUntilDelete(asset.implemented_at) : null;
 
   return (
     <motion.div
@@ -69,11 +89,25 @@ export function AssetCard({
                 padding: '3px 8px',
                 fontSize: 11,
                 fontWeight: 500,
-                backgroundColor: isPending ? 'rgba(202, 138, 4, 0.15)' : 'rgba(22, 163, 74, 0.15)',
-                color: isPending ? '#b45309' : '#16a34a'
+                backgroundColor: statusStyle.bg,
+                color: statusStyle.color
               }}>
-                {isPending ? "Pending" : "Done"}
+                {statusStyle.label}
               </span>
+
+              {/* Days until auto-delete badge for implemented */}
+              {daysLeft !== null && (
+                <span style={{
+                  borderRadius: 999,
+                  padding: '3px 8px',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  backgroundColor: daysLeft <= 2 ? 'rgba(220, 38, 38, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                  color: daysLeft <= 2 ? '#dc2626' : '#6b7280'
+                }}>
+                  {daysLeft === 0 ? 'Deleting soon' : `${daysLeft}d left`}
+                </span>
+              )}
 
               {/* Category badge */}
               {category && (

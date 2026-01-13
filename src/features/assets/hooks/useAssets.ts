@@ -1,18 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type { Asset, Profile, AssetCategory } from "@/types/database";
+import type { Asset, Profile, AssetCategory, AssetStatus } from "@/types/database";
 
 export type AssetWithCreator = Asset & {
   creator: Pick<Profile, "display_name" | "email"> | null;
+  completer: Pick<Profile, "display_name" | "email"> | null;
   implementer: Pick<Profile, "display_name" | "email"> | null;
 };
 
 export interface UseAssetsOptions {
-  status?: "pending" | "implemented";
+  status?: AssetStatus;
   category?: AssetCategory | null;
 }
 
-export function useAssets(statusOrOptions?: "pending" | "implemented" | UseAssetsOptions) {
+export function useAssets(statusOrOptions?: AssetStatus | UseAssetsOptions) {
   // Support both legacy (status string) and new (options object) API
   const options: UseAssetsOptions = typeof statusOrOptions === 'object'
     ? statusOrOptions
@@ -29,6 +30,7 @@ export function useAssets(statusOrOptions?: "pending" | "implemented" | UseAsset
           `
           *,
           creator:profiles!created_by(display_name, email),
+          completer:profiles!completed_by(display_name, email),
           implementer:profiles!implemented_by(display_name, email)
         `
         )
@@ -45,7 +47,20 @@ export function useAssets(statusOrOptions?: "pending" | "implemented" | UseAsset
       const { data, error } = await query;
 
       if (error) throw error;
-      return (data || []) as AssetWithCreator[];
+
+      let assets = (data || []) as AssetWithCreator[];
+
+      // Filter out implemented items older than 7 days (auto-delete)
+      if (status === "implemented") {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        assets = assets.filter(asset => {
+          if (!asset.implemented_at) return true;
+          return new Date(asset.implemented_at) > sevenDaysAgo;
+        });
+      }
+
+      return assets;
     },
   });
 }
@@ -60,6 +75,7 @@ export function useAsset(id: string) {
           `
           *,
           creator:profiles!created_by(display_name, email),
+          completer:profiles!completed_by(display_name, email),
           implementer:profiles!implemented_by(display_name, email)
         `
         )
@@ -71,4 +87,16 @@ export function useAsset(id: string) {
     },
     enabled: !!id,
   });
+}
+
+// Helper to calculate days remaining before auto-delete
+export function getDaysUntilDelete(implementedAt: string | null): number | null {
+  if (!implementedAt) return null;
+  const implementedDate = new Date(implementedAt);
+  const deleteDate = new Date(implementedDate);
+  deleteDate.setDate(deleteDate.getDate() + 7);
+  const now = new Date();
+  const diffMs = deleteDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
 }

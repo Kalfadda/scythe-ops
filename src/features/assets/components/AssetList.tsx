@@ -5,16 +5,16 @@ import { useAssetMutations } from "../hooks/useAssetMutations";
 import { AssetCard } from "./AssetCard";
 import { AssetDetailModal } from "./AssetDetailModal";
 import { Package, Loader2 } from "lucide-react";
-import type { AssetCategory } from "@/types/database";
+import type { AssetCategory, AssetStatus } from "@/types/database";
 
 interface AssetListProps {
-  status?: "pending" | "implemented";
+  status?: AssetStatus;
   category?: AssetCategory | null;
 }
 
 export function AssetList({ status, category }: AssetListProps) {
   const { data: assets, isLoading, error } = useAssets({ status, category });
-  const { markAsImplemented, deleteAsset } = useAssetMutations();
+  const { markAsCompleted, markAsImplemented, moveToPending, moveToCompleted, deleteAsset } = useAssetMutations();
   const [selectedAsset, setSelectedAsset] = useState<AssetWithCreator | null>(null);
 
   if (isLoading) {
@@ -82,21 +82,41 @@ export function AssetList({ status, category }: AssetListProps) {
         <p style={{ fontSize: 14, color: '#6b7280', maxWidth: 320, margin: 0 }}>
           {status === "pending"
             ? "No pending tasks. Create a new task to get started!"
+            : status === "completed"
+            ? "No completed tasks. Mark tasks as complete when work is done!"
             : status === "implemented"
-            ? "No completed tasks yet."
+            ? "No implemented tasks. Tasks here are archived before auto-deletion."
             : "No tasks have been created yet."}
         </p>
       </motion.div>
     );
   }
 
-  const handleMarkImplemented = (id: string) => {
-    markAsImplemented.mutate(id, {
-      onSuccess: () => {
-        setSelectedAsset(null);
-      }
+  const handleMarkCompleted = (id: string) => {
+    markAsCompleted.mutate(id, {
+      onSuccess: () => setSelectedAsset(null)
     });
   };
+
+  const handleMarkImplemented = (id: string) => {
+    markAsImplemented.mutate(id, {
+      onSuccess: () => setSelectedAsset(null)
+    });
+  };
+
+  const handleMoveToPending = (id: string) => {
+    moveToPending.mutate(id, {
+      onSuccess: () => setSelectedAsset(null)
+    });
+  };
+
+  const handleMoveToCompleted = (id: string) => {
+    moveToCompleted.mutate(id, {
+      onSuccess: () => setSelectedAsset(null)
+    });
+  };
+
+  const isLoading_ = markAsCompleted.isPending || markAsImplemented.isPending || moveToPending.isPending || moveToCompleted.isPending;
 
   return (
     <>
@@ -124,8 +144,11 @@ export function AssetList({ status, category }: AssetListProps) {
         asset={selectedAsset}
         isOpen={!!selectedAsset}
         onClose={() => setSelectedAsset(null)}
-        onMarkImplemented={status === "pending" ? handleMarkImplemented : undefined}
-        isMarkingImplemented={markAsImplemented.isPending}
+        onMarkCompleted={status === "pending" ? handleMarkCompleted : undefined}
+        onMarkImplemented={status === "completed" ? handleMarkImplemented : undefined}
+        onMoveToPending={(status === "completed" || status === "implemented") ? handleMoveToPending : undefined}
+        onMoveToCompleted={status === "implemented" ? handleMoveToCompleted : undefined}
+        isTransitioning={isLoading_}
       />
     </>
   );

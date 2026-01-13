@@ -5,24 +5,24 @@ import { useAssetRealtime } from "../hooks/useAssetRealtime";
 import { AssetList } from "./AssetList";
 import { AssetForm } from "./AssetForm";
 import { UpdateNotification } from "@/components/UpdateNotification";
-import { Box, LogOut, Settings, Clock, CheckCircle2, Wifi, Tag, X, ListTodo, Boxes } from "lucide-react";
-import { ASSET_CATEGORIES, type AssetCategory } from "@/types/database";
+import { Box, LogOut, Settings, Clock, CheckCircle2, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info } from "lucide-react";
+import { ASSET_CATEGORIES, type AssetCategory, type AssetStatus } from "@/types/database";
 
-type Tab = "pending" | "implemented";
 type MainView = "tasks" | "modeling";
 
 export function Dashboard() {
   const { profile, signOut } = useAuth();
   const [mainView, setMainView] = useState<MainView>("tasks");
-  const [activeTab, setActiveTab] = useState<Tab>("pending");
+  const [activeTab, setActiveTab] = useState<AssetStatus>("pending");
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
 
   useAssetRealtime();
 
   const { data: pendingAssets } = useAssets({ status: "pending", category: selectedCategory });
+  const { data: completedAssets } = useAssets({ status: "completed", category: selectedCategory });
   const { data: implementedAssets } = useAssets({ status: "implemented", category: selectedCategory });
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
+  const tabs: { id: AssetStatus; label: string; icon: React.ReactNode; count?: number }[] = [
     {
       id: "pending",
       label: "Pending",
@@ -30,9 +30,15 @@ export function Dashboard() {
       count: pendingAssets?.length,
     },
     {
+      id: "completed",
+      label: "Completed",
+      icon: <CircleCheck style={{ width: 16, height: 16 }} />,
+      count: completedAssets?.length,
+    },
+    {
       id: "implemented",
       label: "Implemented",
-      icon: <CheckCircle2 style={{ width: 16, height: 16 }} />,
+      icon: <Archive style={{ width: 16, height: 16 }} />,
       count: implementedAssets?.length,
     },
   ];
@@ -335,6 +341,25 @@ export function Dashboard() {
                 </button>
               )}
             </div>
+
+            {/* Info box for Implemented tab */}
+            {activeTab === "implemented" && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 16px',
+                marginBottom: 24,
+                backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                borderRadius: 10,
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+              }}>
+                <Info style={{ width: 18, height: 18, color: '#3b82f6', flexShrink: 0 }} />
+                <p style={{ margin: 0, fontSize: 13, color: '#3b82f6', lineHeight: 1.5 }}>
+                  Implemented tasks are automatically removed after 7 days. Move tasks back to Completed or Pending if you need to keep them longer.
+                </p>
+              </div>
+            )}
 
             {/* Asset List */}
             <AssetList status={activeTab} category={selectedCategory} />

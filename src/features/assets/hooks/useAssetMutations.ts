@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
-import type { AssetCategory, AssetPriority } from "@/types/database";
+import type { AssetCategory, AssetPriority, AssetStatus } from "@/types/database";
 
 interface CreateAssetData {
   name: string;
@@ -60,7 +60,7 @@ export function useAssetMutations() {
       id: string;
       name?: string;
       blurb?: string;
-      status?: "pending" | "implemented";
+      status?: AssetStatus;
     }) => {
       const { data: asset, error } = await supabase
         .from("assets")
@@ -77,6 +77,31 @@ export function useAssetMutations() {
     },
   });
 
+  // Move task to completed status
+  const markAsCompleted = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: asset, error } = await supabase
+        .from("assets")
+        .update({
+          status: "completed",
+          completed_by: user.id,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return asset;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+    },
+  });
+
+  // Move task to implemented status (from completed)
   const markAsImplemented = useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error("Not authenticated");
@@ -87,6 +112,55 @@ export function useAssetMutations() {
           status: "implemented",
           implemented_by: user.id,
           implemented_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return asset;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+    },
+  });
+
+  // Move task back to pending (from completed or implemented)
+  const moveToPending = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: asset, error } = await supabase
+        .from("assets")
+        .update({
+          status: "pending",
+          completed_by: null,
+          completed_at: null,
+          implemented_by: null,
+          implemented_at: null,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return asset;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+    },
+  });
+
+  // Move task back to completed (from implemented)
+  const moveToCompleted = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: asset, error } = await supabase
+        .from("assets")
+        .update({
+          status: "completed",
+          implemented_by: null,
+          implemented_at: null,
+          // Keep completed_by and completed_at if they exist
         })
         .eq("id", id)
         .select()
@@ -114,7 +188,10 @@ export function useAssetMutations() {
   return {
     createAsset,
     updateAsset,
+    markAsCompleted,
     markAsImplemented,
+    moveToPending,
+    moveToCompleted,
     deleteAsset,
   };
 }

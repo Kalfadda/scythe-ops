@@ -12,6 +12,9 @@ export type AssetCategory =
 // Priority levels
 export type AssetPriority = "low" | "medium" | "high" | "critical";
 
+// Asset status workflow: pending -> completed -> implemented
+export type AssetStatus = "pending" | "completed" | "implemented";
+
 // Category metadata for UI
 export const ASSET_CATEGORIES: Record<AssetCategory, { label: string; color: string }> = {
   art: { label: "Art", color: "#ec4899" },
@@ -72,10 +75,12 @@ export type Database = {
           id: string;
           name: string;
           blurb: string | null;
-          status: "pending" | "implemented";
+          status: AssetStatus;
           category: AssetCategory | null;
           priority: AssetPriority | null;
           created_by: string | null;
+          completed_by: string | null;
+          completed_at: string | null;
           implemented_by: string | null;
           implemented_at: string | null;
           created_at: string;
@@ -85,10 +90,12 @@ export type Database = {
           id?: string;
           name: string;
           blurb?: string | null;
-          status?: "pending" | "implemented";
+          status?: AssetStatus;
           category?: AssetCategory | null;
           priority?: AssetPriority | null;
           created_by?: string | null;
+          completed_by?: string | null;
+          completed_at?: string | null;
           implemented_by?: string | null;
           implemented_at?: string | null;
           created_at?: string;
@@ -98,10 +105,12 @@ export type Database = {
           id?: string;
           name?: string;
           blurb?: string | null;
-          status?: "pending" | "implemented";
+          status?: AssetStatus;
           category?: AssetCategory | null;
           priority?: AssetPriority | null;
           created_by?: string | null;
+          completed_by?: string | null;
+          completed_at?: string | null;
           implemented_by?: string | null;
           implemented_at?: string | null;
           created_at?: string;

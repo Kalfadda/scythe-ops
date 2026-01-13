@@ -4,6 +4,19 @@ All notable changes to Scythe Ops will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.3] - 2026-01-12
+
+### Added
+- Three-stage task workflow: Pending → Completed → Implemented
+- Ability to move tasks forward and backward between stages
+- Auto-delete for implemented tasks after 7 days
+- Days remaining indicator on implemented tasks
+- Info banner explaining auto-delete behavior
+
+### Changed
+- Updated task status badges with distinct colors for each stage
+- Improved task detail modal with bidirectional navigation buttons
+
 ## [0.1.2] - 2026-01-12
 
 ### Added
