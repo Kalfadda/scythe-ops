@@ -180,6 +180,75 @@ export function Dashboard() {
             </button>
           ))}
 
+          {/* Technical Dropdown */}
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={() => setTechnicalExpanded(!technicalExpanded)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontWeight: 500,
+                backgroundColor: technicalItems.some(t => mainView === t.id) ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
+                color: technicalItems.some(t => mainView === t.id) ? '#4ade80' : '#9ca3af',
+                textAlign: 'left',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Cpu style={{ width: 20, height: 20 }} />
+                Technical
+              </div>
+              <ChevronDown
+                style={{
+                  width: 16,
+                  height: 16,
+                  transition: 'transform 0.2s ease',
+                  transform: technicalExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}
+              />
+            </button>
+
+            {/* Technical Items */}
+            <div style={{
+              overflow: 'hidden',
+              maxHeight: technicalExpanded ? '200px' : '0px',
+              transition: 'max-height 0.2s ease',
+            }}>
+              {technicalItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setMainView(item.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '10px 16px 10px 44px',
+                    borderRadius: 6,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    backgroundColor: mainView === item.id ? 'rgba(34, 197, 94, 0.2)' : 'transparent',
+                    color: mainView === item.id ? '#4ade80' : '#6b7280',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Modeling Dropdown */}
           <div style={{ marginTop: 8 }}>
             <button
@@ -313,75 +382,6 @@ export function Dashboard() {
                 >
                   {tool.icon}
                   {tool.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Technical Dropdown */}
-          <div style={{ marginTop: 8 }}>
-            <button
-              onClick={() => setTechnicalExpanded(!technicalExpanded)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 14,
-                fontWeight: 500,
-                backgroundColor: technicalItems.some(t => mainView === t.id) ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
-                color: technicalItems.some(t => mainView === t.id) ? '#4ade80' : '#9ca3af',
-                textAlign: 'left',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Cpu style={{ width: 20, height: 20 }} />
-                Technical
-              </div>
-              <ChevronDown
-                style={{
-                  width: 16,
-                  height: 16,
-                  transition: 'transform 0.2s ease',
-                  transform: technicalExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
-                }}
-              />
-            </button>
-
-            {/* Technical Items */}
-            <div style={{
-              overflow: 'hidden',
-              maxHeight: technicalExpanded ? '200px' : '0px',
-              transition: 'max-height 0.2s ease',
-            }}>
-              {technicalItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setMainView(item.id)}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '10px 16px 10px 44px',
-                    borderRadius: 6,
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    fontWeight: 500,
-                    backgroundColor: mainView === item.id ? 'rgba(34, 197, 94, 0.2)' : 'transparent',
-                    color: mainView === item.id ? '#4ade80' : '#6b7280',
-                    textAlign: 'left',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {item.icon}
-                  {item.label}
                 </button>
               ))}
             </div>
