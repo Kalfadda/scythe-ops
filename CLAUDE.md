@@ -37,7 +37,19 @@ Then launch `src-tauri\target\release\scytheops.exe` to verify the changes work.
 - Deliverables can auto-create linked tasks
 - Deleting a task removes linked calendar events
 
-### Tools
+### Modeling (collapsible dropdown)
+- **Modeling Requests**: Request 3D models/assets from the design team
+- Status workflow: Open → Accepted (creates Design task) OR Denied
+- Denied requests auto-hide after 7 days
+- Accepting a request creates a linked task with category "design"
+
+### Technical (collapsible dropdown)
+- **Feature Requests**: Request new features from the dev team
+- Status workflow: Open → Accepted (creates Code task) OR Denied
+- Denied requests auto-hide after 7 days
+- Accepting a request creates a linked task with category "code"
+
+### Tools (collapsible dropdown)
 - Compare tool: Side-by-side comparison of task categories
 
 ### Admin
@@ -68,6 +80,22 @@ Then launch `src-tauri\target\release\scytheops.exe` to verify the changes work.
 - `src/features/schedule/hooks/useEvents.ts` - Event queries
 - `src/features/schedule/hooks/useEventMutations.ts` - Event mutations
 
+### Modeling
+- `src/features/modeling/components/ModelingView.tsx` - Main view with tabs
+- `src/features/modeling/components/RequestList.tsx` - Request grid display
+- `src/features/modeling/components/RequestCard.tsx` - Request card
+- `src/features/modeling/components/RequestDetailModal.tsx` - Request details with accept/deny
+- `src/features/modeling/hooks/useRequests.ts` - Request queries
+- `src/features/modeling/hooks/useRequestMutations.ts` - Request mutations
+
+### Feature Requests
+- `src/features/featurerequests/components/FeatureRequestsView.tsx` - Main view with tabs
+- `src/features/featurerequests/components/FeatureRequestList.tsx` - Request grid display
+- `src/features/featurerequests/components/FeatureRequestCard.tsx` - Request card
+- `src/features/featurerequests/components/FeatureRequestDetailModal.tsx` - Request details
+- `src/features/featurerequests/hooks/useFeatureRequests.ts` - Request queries
+- `src/features/featurerequests/hooks/useFeatureRequestMutations.ts` - Request mutations
+
 ### Tools
 - `src/features/tools/components/Compare.tsx` - Category comparison tool
 
@@ -90,6 +118,18 @@ Then launch `src-tauri\target\release\scytheops.exe` to verify the changes work.
 - id, type, title, description, event_date, event_time
 - visibility, linked_asset_id, auto_create_task
 - created_by, created_at, updated_at
+
+### model_requests
+- id, name, description, priority, status (open/accepted/denied)
+- created_by, created_at, updated_at
+- accepted_by, accepted_at, linked_asset_id
+- denied_by, denied_at, denial_reason
+
+### feature_requests
+- id, name, description, priority, status (open/accepted/denied)
+- created_by, created_at, updated_at
+- accepted_by, accepted_at, linked_asset_id
+- denied_by, denied_at, denial_reason
 
 ## Supabase Configuration
 
@@ -135,7 +175,18 @@ The app checks for updates on launch and forces users to update (blocking modal)
 
 ### Publishing a Release
 
-After running the signed build (see Build & Test Workflow above), create a GitHub Release (tag `vX.X.X`) and upload from `src-tauri/target/release/bundle/`:
+**Automated (recommended):** Run the release script which builds, commits, and publishes:
+```cmd
+release.bat
+```
+
+This script will:
+1. Run `build-signed.bat` to create signed installers
+2. Generate `latest.json` with correct version and signature
+3. Commit all changes to git and push to GitHub
+4. Create a GitHub release with all required artifacts
+
+**Manual:** After running `build-signed.bat`, create a GitHub Release (tag `vX.X.X`) and upload from `src-tauri/target/release/bundle/`:
 - `nsis/Scythe Ops_x.x.x_x64-setup.exe` + `.sig`
 - `msi/Scythe Ops_x.x.x_x64_en-US.msi` + `.sig`
 - `latest.json`
@@ -152,3 +203,5 @@ After running the signed build (see Build & Test Workflow above), create a GitHu
 - Protected routes redirect to `/login` when no user
 - Inline CSS styles (not Tailwind) for all components
 - Feature-based folder structure: `src/features/<feature>/components|hooks`
+- Deleting tasks clears `linked_asset_id` from model_requests, feature_requests, and events
+- Request features (modeling/feature) use same pattern: Open → Accepted/Denied with 7-day auto-hide for denied
