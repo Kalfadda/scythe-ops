@@ -1,16 +1,25 @@
 # Claude Code Instructions
 
-## Build & Test Workflow
+## Build & Release Workflow
 
-After every feature change or code modification, run the signed build script:
+To publish a new release, run the single release script:
 
 ```cmd
-build-signed.bat
+release.bat
 ```
 
-Then launch `src-tauri\target\release\scytheops.exe` to verify the changes work.
+This script handles everything:
+1. Increments the patch version (e.g., 0.1.0 → 0.1.1)
+2. Builds and signs the installers
+3. Generates `latest.json` with the correct signature
+4. Commits and pushes to GitHub
+5. Creates a GitHub release with all artifacts
 
-**Note:** The script automatically increments the patch version (e.g., 0.1.0 → 0.1.1) and signs the build.
+To test locally before release, run:
+```cmd
+npm run release
+```
+Then launch `src-tauri\target\release\scytheops.exe` to verify changes.
 
 ## Project Structure
 
@@ -23,11 +32,14 @@ Then launch `src-tauri\target\release\scytheops.exe` to verify the changes work.
 ## Feature Overview
 
 ### Tasks (Assets)
-- Three-stage workflow: Pending → Completed → Implemented
+- Four-stage workflow: Pending → In Progress → Completed → Implemented
+- Moving to "In Progress" auto-claims the task
+- Optional ETA date auto-creates a deliverable on the schedule
 - Categories: Art, Code, Audio, Design, Docs, Marketing, Infra, Other
 - Priorities: Low, Medium, High, Critical
 - Claim system: Users can claim/unclaim tasks to signal ownership
 - Implemented tasks auto-delete after 7 days
+- Deleting linked tasks/events shows a warning prompt
 - Full CRUD with edit support in detail modal
 
 ### Schedule
@@ -109,8 +121,8 @@ Then launch `src-tauri\target\release\scytheops.exe` to verify the changes work.
 - id, email, display_name, is_blocked, blocked_at, blocked_reason, created_at, updated_at
 
 ### assets (tasks)
-- id, name, blurb, status, category, priority
-- created_by, completed_by, completed_at, implemented_by, implemented_at
+- id, name, blurb, status, category, priority, eta_date
+- created_by, in_progress_by, in_progress_at, completed_by, completed_at, implemented_by, implemented_at
 - claimed_by, claimed_at
 - created_at, updated_at
 
@@ -175,25 +187,21 @@ The app checks for updates on launch and forces users to update (blocking modal)
 
 ### Publishing a Release
 
-**Automated (recommended):** Run the release script which builds, commits, and publishes:
+Run the single release script:
 ```cmd
 release.bat
 ```
 
-This script will:
-1. Run `build-signed.bat` to create signed installers
-2. Generate `latest.json` with correct version and signature
-3. Commit all changes to git and push to GitHub
-4. Create a GitHub release with all required artifacts
-
-**Manual:** After running `build-signed.bat`, create a GitHub Release (tag `vX.X.X`) and upload from `src-tauri/target/release/bundle/`:
-- `nsis/Scythe Ops_x.x.x_x64-setup.exe` + `.sig`
-- `msi/Scythe Ops_x.x.x_x64_en-US.msi` + `.sig`
-- `latest.json`
+This handles everything automatically:
+1. Increments version number
+2. Builds and signs installers (NSIS + MSI)
+3. Generates `latest.json` with correct signature
+4. Commits and pushes to GitHub
+5. Creates GitHub release with all artifacts
 
 ### Signing Key
-- Private: `src-tauri/.tauri-updater-key` (SECRET - do not commit!)
-- Public: embedded in `tauri.conf.json`
+- Private key: embedded in `release.bat` (encrypted)
+- Public key: embedded in `tauri.conf.json`
 - Password: `scythe`
 
 ## Common Patterns
