@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  useNotificationStore,
+  createNotificationConfig,
+} from "@/stores/notificationStore";
 import type { AssetCategory, AssetPriority, AssetStatus } from "@/types/database";
 
 interface CreateAssetData {
@@ -14,6 +18,8 @@ interface CreateAssetData {
 export function useAssetMutations() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const profile = useAuthStore((state) => state.profile);
+  const addNotification = useNotificationStore((state) => state.addNotification);
 
   const createAsset = useMutation({
     mutationFn: async (data: CreateAssetData) => {
@@ -65,10 +71,18 @@ export function useAssetMutations() {
 
       return asset;
     },
-    onSuccess: () => {
+    onSuccess: (asset) => {
       console.log("Asset created successfully");
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      addNotification(
+        createNotificationConfig(
+          "task_created",
+          asset.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
     onError: (error) => {
       console.error("Mutation error:", error);
@@ -171,8 +185,16 @@ export function useAssetMutations() {
       if (error) throw error;
       return asset;
     },
-    onSuccess: () => {
+    onSuccess: (asset) => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "task_in_progress",
+          asset.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 
@@ -195,8 +217,16 @@ export function useAssetMutations() {
       if (error) throw error;
       return asset;
     },
-    onSuccess: () => {
+    onSuccess: (asset) => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "task_completed",
+          asset.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 
@@ -219,8 +249,16 @@ export function useAssetMutations() {
       if (error) throw error;
       return asset;
     },
-    onSuccess: () => {
+    onSuccess: (asset) => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "task_implemented",
+          asset.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 
@@ -375,8 +413,16 @@ export function useAssetMutations() {
       if (error) throw error;
       return asset;
     },
-    onSuccess: () => {
+    onSuccess: (asset) => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "task_claimed",
+          asset.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 
@@ -396,8 +442,16 @@ export function useAssetMutations() {
       if (error) throw error;
       return asset;
     },
-    onSuccess: () => {
+    onSuccess: (asset) => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "task_unclaimed",
+          asset.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 

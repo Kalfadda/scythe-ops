@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  useNotificationStore,
+  createNotificationConfig,
+} from "@/stores/notificationStore";
 import type { AssetPriority } from "@/types/database";
 
 interface CreateFeatureRequestData {
@@ -12,6 +16,8 @@ interface CreateFeatureRequestData {
 export function useFeatureRequestMutations() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const profile = useAuthStore((state) => state.profile);
+  const addNotification = useNotificationStore((state) => state.addNotification);
 
   const createRequest = useMutation({
     mutationFn: async (data: CreateFeatureRequestData) => {
@@ -32,8 +38,16 @@ export function useFeatureRequestMutations() {
       if (error) throw error;
       return request;
     },
-    onSuccess: () => {
+    onSuccess: (request) => {
       queryClient.invalidateQueries({ queryKey: ["feature_requests"] });
+      addNotification(
+        createNotificationConfig(
+          "feature_request_created",
+          request.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 
@@ -85,9 +99,17 @@ export function useFeatureRequestMutations() {
 
       return { request: updatedRequest, asset };
     },
-    onSuccess: () => {
+    onSuccess: ({ request }) => {
       queryClient.invalidateQueries({ queryKey: ["feature_requests"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "feature_request_accepted",
+          request.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 
@@ -118,8 +140,16 @@ export function useFeatureRequestMutations() {
       if (error) throw error;
       return request;
     },
-    onSuccess: () => {
+    onSuccess: (request) => {
       queryClient.invalidateQueries({ queryKey: ["feature_requests"] });
+      addNotification(
+        createNotificationConfig(
+          "feature_request_denied",
+          request.name,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 

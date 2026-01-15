@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthPage, ProtectedRoute } from "./features/auth";
 import { Dashboard } from "./features/assets";
 import { AdminPanel } from "./features/admin";
+import { NotificationContainer } from "./components/notifications";
 import { sendHeartbeat } from "./lib/heartbeat";
 
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <NotificationContainer />
         <Routes>
           <Route path="/login" element={<AuthPage />} />
           <Route element={<ProtectedRoute />}>

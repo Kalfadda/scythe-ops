@@ -5,10 +5,9 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   useNotificationStore,
   createNotificationConfig,
-  NotificationType,
 } from "@/stores/notificationStore";
 
-export function useFeatureRequestRealtime() {
+export function useEventRealtime() {
   const queryClient = useQueryClient();
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const user = useAuthStore((state) => state.user);
@@ -16,47 +15,33 @@ export function useFeatureRequestRealtime() {
 
   useEffect(() => {
     const channel = supabase
-      .channel("feature-requests-realtime")
+      .channel("events-realtime")
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
-          table: "feature_requests",
+          table: "events",
         },
         async (payload) => {
           // Always invalidate queries
-          queryClient.invalidateQueries({ queryKey: ["feature_requests"] });
+          queryClient.invalidateQueries({ queryKey: ["events"] });
 
           // Skip notifications if no user is logged in
           if (!user) return;
 
           const newRecord = payload.new as Record<string, unknown>;
-          const oldRecord = payload.old as Record<string, unknown>;
 
-          let actorId: string | null = null;
-          let notificationType: NotificationType | null = null;
+          // Skip DELETE events
+          if (payload.eventType === "DELETE") return;
 
-          if (payload.eventType === "INSERT") {
-            actorId = newRecord.created_by as string;
-            notificationType = "feature_request_created";
-          } else if (payload.eventType === "UPDATE") {
-            const oldStatus = oldRecord.status;
-            const newStatus = newRecord.status;
-
-            if (oldStatus !== newStatus) {
-              if (newStatus === "accepted") {
-                actorId = newRecord.accepted_by as string;
-                notificationType = "feature_request_accepted";
-              } else if (newStatus === "denied") {
-                actorId = newRecord.denied_by as string;
-                notificationType = "feature_request_denied";
-              }
-            }
-          }
+          const actorId = newRecord.created_by as string;
 
           // Skip if this was the current user's action
-          if (!actorId || actorId === user.id || !notificationType) return;
+          if (!actorId || actorId === user.id) return;
+
+          const notificationType =
+            payload.eventType === "INSERT" ? "schedule_created" : "schedule_updated";
 
           // Fetch actor's profile for display name
           const { data: actorProfile } = await supabase
@@ -70,7 +55,7 @@ export function useFeatureRequestRealtime() {
             actorProfile?.email?.split("@")[0] ||
             "Someone";
 
-          const itemName = (newRecord.name as string) || "a request";
+          const itemName = (newRecord.title as string) || "an event";
 
           addNotification(
             createNotificationConfig(notificationType, itemName, actorName, false)

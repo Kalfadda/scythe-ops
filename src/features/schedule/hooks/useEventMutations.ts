@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  useNotificationStore,
+  createNotificationConfig,
+} from "@/stores/notificationStore";
 import type { EventType, EventVisibility, AssetCategory, AssetPriority } from "@/types/database";
 
 interface CreateEventData {
@@ -35,6 +39,8 @@ interface CreateTaskFromDeliverableData {
 export function useEventMutations() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const profile = useAuthStore((state) => state.profile);
+  const addNotification = useNotificationStore((state) => state.addNotification);
 
   const createEvent = useMutation({
     mutationFn: async (data: CreateEventData) => {
@@ -96,10 +102,18 @@ export function useEventMutations() {
       }
       return event;
     },
-    onSuccess: () => {
+    onSuccess: (event) => {
       console.log("Event created successfully");
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "schedule_created",
+          event.title,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
     onError: (error) => {
       console.error("Mutation error:", error);
@@ -172,9 +186,17 @@ export function useEventMutations() {
       if (error) throw error;
       return event;
     },
-    onSuccess: () => {
+    onSuccess: (event) => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["assets"] });
+      addNotification(
+        createNotificationConfig(
+          "schedule_updated",
+          event.title,
+          profile?.display_name || profile?.email || "You",
+          true
+        )
+      );
     },
   });
 

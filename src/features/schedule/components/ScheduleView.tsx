@@ -4,6 +4,7 @@ import { EventForm } from "./EventForm";
 import { EventCard } from "./EventCard";
 import { useEvents } from "../hooks/useEvents";
 import { useEventMutations } from "../hooks/useEventMutations";
+import { useEventRealtime } from "../hooks/useEventRealtime";
 import {
   Plus,
   Filter,
@@ -27,6 +28,7 @@ export function ScheduleView() {
 
   const { data: events, isLoading } = useEvents({});
   const { createEvent, updateEvent, deleteEvent, deleteEventWithLinkedTask, checkLinkedTask } = useEventMutations();
+  useEventRealtime();
 
   // Filter events based on selected type
   const filteredEvents = useMemo(() => {
