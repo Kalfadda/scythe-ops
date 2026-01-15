@@ -39,11 +39,31 @@ export const ASSET_PRIORITIES: Record<AssetPriority, { label: string; color: str
 export type EventType = "milestone" | "deliverable" | "label";
 export type EventVisibility = "internal" | "external";
 
+// Model request status workflow: open -> accepted OR denied
+export type ModelRequestStatus = "open" | "accepted" | "denied";
+
+// Feature request status workflow: open -> accepted OR denied
+export type FeatureRequestStatus = "open" | "accepted" | "denied";
+
 // Event metadata for UI
 export const EVENT_TYPES: Record<EventType, { label: string; color: string; icon: string }> = {
   milestone: { label: "Milestone", color: "#8b5cf6", icon: "Flag" },
   deliverable: { label: "Deliverable", color: "#f59e0b", icon: "Package" },
   label: { label: "Label", color: "#6b7280", icon: "Tag" },
+};
+
+// Model request status metadata for UI
+export const MODEL_REQUEST_STATUSES: Record<ModelRequestStatus, { label: string; color: string }> = {
+  open: { label: "Open", color: "#3b82f6" },
+  accepted: { label: "Accepted", color: "#16a34a" },
+  denied: { label: "Denied", color: "#ef4444" },
+};
+
+// Feature request status metadata for UI
+export const FEATURE_REQUEST_STATUSES: Record<FeatureRequestStatus, { label: string; color: string }> = {
+  open: { label: "Open", color: "#3b82f6" },
+  accepted: { label: "Accepted", color: "#16a34a" },
+  denied: { label: "Denied", color: "#ef4444" },
 };
 
 export type Database = {
@@ -178,6 +198,106 @@ export type Database = {
           updated_at?: string;
         };
       };
+      model_requests: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          priority: AssetPriority | null;
+          status: ModelRequestStatus;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          accepted_by: string | null;
+          accepted_at: string | null;
+          linked_asset_id: string | null;
+          denied_by: string | null;
+          denied_at: string | null;
+          denial_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          priority?: AssetPriority | null;
+          status?: ModelRequestStatus;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          accepted_by?: string | null;
+          accepted_at?: string | null;
+          linked_asset_id?: string | null;
+          denied_by?: string | null;
+          denied_at?: string | null;
+          denial_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          priority?: AssetPriority | null;
+          status?: ModelRequestStatus;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          accepted_by?: string | null;
+          accepted_at?: string | null;
+          linked_asset_id?: string | null;
+          denied_by?: string | null;
+          denied_at?: string | null;
+          denial_reason?: string | null;
+        };
+      };
+      feature_requests: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          priority: AssetPriority | null;
+          status: FeatureRequestStatus;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          accepted_by: string | null;
+          accepted_at: string | null;
+          linked_asset_id: string | null;
+          denied_by: string | null;
+          denied_at: string | null;
+          denial_reason: string | null;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          priority?: AssetPriority | null;
+          status?: FeatureRequestStatus;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          accepted_by?: string | null;
+          accepted_at?: string | null;
+          linked_asset_id?: string | null;
+          denied_by?: string | null;
+          denied_at?: string | null;
+          denial_reason?: string | null;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          priority?: AssetPriority | null;
+          status?: FeatureRequestStatus;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          accepted_by?: string | null;
+          accepted_at?: string | null;
+          linked_asset_id?: string | null;
+          denied_by?: string | null;
+          denied_at?: string | null;
+          denial_reason?: string | null;
+        };
+      };
     };
   };
 };
@@ -190,3 +310,11 @@ export type AssetUpdate = Database["public"]["Tables"]["assets"]["Update"];
 export type Event = Database["public"]["Tables"]["events"]["Row"];
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
 export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
+
+export type ModelRequest = Database["public"]["Tables"]["model_requests"]["Row"];
+export type ModelRequestInsert = Database["public"]["Tables"]["model_requests"]["Insert"];
+export type ModelRequestUpdate = Database["public"]["Tables"]["model_requests"]["Update"];
+
+export type FeatureRequest = Database["public"]["Tables"]["feature_requests"]["Row"];
+export type FeatureRequestInsert = Database["public"]["Tables"]["feature_requests"]["Insert"];
+export type FeatureRequestUpdate = Database["public"]["Tables"]["feature_requests"]["Update"];

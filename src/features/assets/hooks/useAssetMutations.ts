@@ -186,7 +186,26 @@ export function useAssetMutations() {
 
       if (eventError) {
         console.warn("Failed to delete linked events:", eventError);
-        // Continue with asset deletion even if event deletion fails
+      }
+
+      // Clear linked_asset_id from model_requests that reference this asset
+      const { error: modelRequestError } = await supabase
+        .from("model_requests")
+        .update({ linked_asset_id: null })
+        .eq("linked_asset_id", id);
+
+      if (modelRequestError) {
+        console.warn("Failed to unlink model requests:", modelRequestError);
+      }
+
+      // Clear linked_asset_id from feature_requests that reference this asset
+      const { error: featureRequestError } = await supabase
+        .from("feature_requests")
+        .update({ linked_asset_id: null })
+        .eq("linked_asset_id", id);
+
+      if (featureRequestError) {
+        console.warn("Failed to unlink feature requests:", featureRequestError);
       }
 
       // Then delete the asset
@@ -197,6 +216,8 @@ export function useAssetMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["model_requests"] });
+      queryClient.invalidateQueries({ queryKey: ["feature_requests"] });
     },
   });
 

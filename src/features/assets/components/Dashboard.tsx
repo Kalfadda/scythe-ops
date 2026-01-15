@@ -11,12 +11,14 @@ import { UpdateNotification } from "@/components/UpdateNotification";
 import { Compare } from "@/features/tools";
 import { ScheduleView } from "@/features/schedule";
 import { ModelingView } from "@/features/modeling";
-import { VersionControlView } from "@/features/versioncontrol";
-import { Box, LogOut, Settings, Clock, CheckCircle2, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays, Wrench, ChevronDown, GitCompare, GitBranch } from "lucide-react";
+import { FeatureRequestsView } from "@/features/featurerequests";
+import { Box, LogOut, Settings, Clock, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays, Wrench, ChevronDown, GitCompare, Cpu, Lightbulb, FileQuestion } from "lucide-react";
 import { ASSET_CATEGORIES, type AssetCategory, type AssetStatus } from "@/types/database";
 
-type MainView = "tasks" | "schedule" | "modeling" | "versioncontrol" | "compare";
+type MainView = "tasks" | "schedule" | "modelingrequests" | "compare" | "featurerequests";
 type ToolItem = { id: MainView; label: string; icon: React.ReactNode };
+type TechnicalItem = { id: MainView; label: string; icon: React.ReactNode };
+type ModelingItem = { id: MainView; label: string; icon: React.ReactNode };
 
 export function Dashboard() {
   const { profile, signOut } = useAuth();
@@ -62,11 +64,21 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<AssetStatus>("pending");
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | null>(null);
   const [toolsExpanded, setToolsExpanded] = useState(false);
+  const [technicalExpanded, setTechnicalExpanded] = useState(false);
+  const [modelingExpanded, setModelingExpanded] = useState(false);
 
   useAssetRealtime();
 
   const toolItems: ToolItem[] = [
     { id: "compare", label: "Compare", icon: <GitCompare style={{ width: 18, height: 18 }} /> },
+  ];
+
+  const technicalItems: TechnicalItem[] = [
+    { id: "featurerequests", label: "Feature Requests", icon: <Lightbulb style={{ width: 18, height: 18 }} /> },
+  ];
+
+  const modelingItems: ModelingItem[] = [
+    { id: "modelingrequests", label: "Modeling Requests", icon: <FileQuestion style={{ width: 18, height: 18 }} /> },
   ];
 
   const { data: pendingAssets } = useAssets({ status: "pending", category: selectedCategory });
@@ -97,8 +109,6 @@ export function Dashboard() {
   const sidebarItems: { id: MainView; label: string; icon: React.ReactNode }[] = [
     { id: "tasks", label: "Tasks", icon: <ListTodo style={{ width: 20, height: 20 }} /> },
     { id: "schedule", label: "Schedule", icon: <CalendarDays style={{ width: 20, height: 20 }} /> },
-    { id: "modeling", label: "Modeling", icon: <Boxes style={{ width: 20, height: 20 }} /> },
-    { id: "versioncontrol", label: "Version Control", icon: <GitBranch style={{ width: 20, height: 20 }} /> },
   ];
 
   return (
@@ -170,6 +180,75 @@ export function Dashboard() {
             </button>
           ))}
 
+          {/* Modeling Dropdown */}
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={() => setModelingExpanded(!modelingExpanded)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontWeight: 500,
+                backgroundColor: modelingItems.some(t => mainView === t.id) ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
+                color: modelingItems.some(t => mainView === t.id) ? '#a78bfa' : '#9ca3af',
+                textAlign: 'left',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Boxes style={{ width: 20, height: 20 }} />
+                Modeling
+              </div>
+              <ChevronDown
+                style={{
+                  width: 16,
+                  height: 16,
+                  transition: 'transform 0.2s ease',
+                  transform: modelingExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}
+              />
+            </button>
+
+            {/* Modeling Items */}
+            <div style={{
+              overflow: 'hidden',
+              maxHeight: modelingExpanded ? '200px' : '0px',
+              transition: 'max-height 0.2s ease',
+            }}>
+              {modelingItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setMainView(item.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '10px 16px 10px 44px',
+                    borderRadius: 6,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    backgroundColor: mainView === item.id ? 'rgba(124, 58, 237, 0.2)' : 'transparent',
+                    color: mainView === item.id ? '#a78bfa' : '#6b7280',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Tools Dropdown */}
           <div style={{ marginTop: 8 }}>
             <button
@@ -234,6 +313,75 @@ export function Dashboard() {
                 >
                   {tool.icon}
                   {tool.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Technical Dropdown */}
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={() => setTechnicalExpanded(!technicalExpanded)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontWeight: 500,
+                backgroundColor: technicalItems.some(t => mainView === t.id) ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
+                color: technicalItems.some(t => mainView === t.id) ? '#4ade80' : '#9ca3af',
+                textAlign: 'left',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Cpu style={{ width: 20, height: 20 }} />
+                Technical
+              </div>
+              <ChevronDown
+                style={{
+                  width: 16,
+                  height: 16,
+                  transition: 'transform 0.2s ease',
+                  transform: technicalExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}
+              />
+            </button>
+
+            {/* Technical Items */}
+            <div style={{
+              overflow: 'hidden',
+              maxHeight: technicalExpanded ? '200px' : '0px',
+              transition: 'max-height 0.2s ease',
+            }}>
+              {technicalItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setMainView(item.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '10px 16px 10px 44px',
+                    borderRadius: 6,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    backgroundColor: mainView === item.id ? 'rgba(34, 197, 94, 0.2)' : 'transparent',
+                    color: mainView === item.id ? '#4ade80' : '#6b7280',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {item.icon}
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -522,15 +670,9 @@ export function Dashboard() {
           </main>
         )}
 
-        {mainView === "modeling" && (
+        {mainView === "modelingrequests" && (
           <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
             <ModelingView />
-          </main>
-        )}
-
-        {mainView === "versioncontrol" && (
-          <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
-            <VersionControlView />
           </main>
         )}
 
@@ -546,6 +688,12 @@ export function Dashboard() {
               </p>
             </div>
             <Compare />
+          </main>
+        )}
+
+        {mainView === "featurerequests" && (
+          <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
+            <FeatureRequestsView />
           </main>
         )}
       </div>
