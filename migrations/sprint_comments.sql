@@ -17,5 +17,9 @@ ALTER TABLE public.comments ADD CONSTRAINT comments_target_check
 -- Create index for sprint_id
 CREATE INDEX idx_comments_sprint_id ON public.comments(sprint_id);
 
+-- Enable realtime for comments (needed for notifications)
+-- Note: This may fail if already added - that's OK, just ignore the error
+ALTER PUBLICATION supabase_realtime ADD TABLE public.comments;
+
 -- Update RLS policies are not needed since they already allow authenticated users
 -- and the table structure change is transparent to RLS

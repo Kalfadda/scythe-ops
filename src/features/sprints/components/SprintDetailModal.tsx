@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Zap, Plus, Trash2, CheckCircle2, AlertCircle, Edit2, Link2, MessageCircle, Send } from "lucide-react";
+import { X, Zap, Plus, Trash2, CheckCircle2, AlertCircle, Edit2, Link2, MessageCircle, Send, PlusCircle } from "lucide-react";
 import type { SprintWithDetails } from "../hooks/useSprints";
 import { useSprintMutations } from "../hooks/useSprintMutations";
 import { useSprintDependencies, useTaskDependencyMutations } from "../hooks/useTaskDependencies";
 import { useSprintComments } from "../hooks/useSprintComments";
 import { useSprintCommentMutations } from "../hooks/useSprintCommentMutations";
 import { useAssets } from "@/features/assets/hooks/useAssets";
+import { useAssetMutations } from "@/features/assets/hooks/useAssetMutations";
 import { useAuthStore } from "@/stores/authStore";
-import { SPRINT_STATUSES, ASSET_CATEGORIES, type Asset } from "@/types/database";
+import { SPRINT_STATUSES, ASSET_CATEGORIES, type Asset, type AssetCategory } from "@/types/database";
 
 interface SprintDetailModalProps {
   sprint: SprintWithDetails | null;
@@ -18,14 +19,21 @@ interface SprintDetailModalProps {
 
 export function SprintDetailModal({ sprint, isOpen, onClose }: SprintDetailModalProps) {
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
   const [showAddDependency, setShowAddDependency] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [newComment, setNewComment] = useState("");
 
+  // New task creation state
+  const [newTaskName, setNewTaskName] = useState("");
+  const [newTaskBlurb, setNewTaskBlurb] = useState("");
+  const [newTaskCategory, setNewTaskCategory] = useState<AssetCategory | "">("");
+
   const user = useAuthStore((state) => state.user);
   const { updateSprint, deleteSprint, removeTaskFromSprint, addTaskToSprint } = useSprintMutations();
+  const { createAsset } = useAssetMutations();
   const { data: dependencies = [] } = useSprintDependencies(sprint?.id);
   const { addDependency, removeDependencyById } = useTaskDependencyMutations();
 
@@ -92,6 +100,35 @@ export function SprintDetailModal({ sprint, isOpen, onClose }: SprintDetailModal
       sprintId: sprint.id,
     });
     setShowAddDependency(null);
+  };
+
+  const handleCreateTask = async () => {
+    if (!newTaskName.trim() || !sprint) return;
+
+    try {
+      const newAsset = await createAsset.mutateAsync({
+        name: newTaskName.trim(),
+        blurb: newTaskBlurb.trim(),
+        category: newTaskCategory || null,
+      });
+
+      // Add the newly created task to this sprint
+      if (newAsset?.id) {
+        addTaskToSprint.mutate({
+          sprintId: sprint.id,
+          assetId: newAsset.id,
+        });
+      }
+
+      // Reset form
+      setNewTaskName("");
+      setNewTaskBlurb("");
+      setNewTaskCategory("");
+      setShowCreateTask(false);
+      setShowAddTask(false);
+    } catch (error) {
+      console.error("Failed to create task:", error);
+    }
   };
 
   const handleAddComment = () => {
@@ -610,7 +647,7 @@ export function SprintDetailModal({ sprint, isOpen, onClose }: SprintDetailModal
                   )}
 
                   {/* Add task dropdown */}
-                  {showAddTask && (
+                  {showAddTask && !showCreateTask && (
                     <div style={{
                       marginTop: 12,
                       padding: 16,
@@ -618,12 +655,35 @@ export function SprintDetailModal({ sprint, isOpen, onClose }: SprintDetailModal
                       border: '1px solid #e5e5eb',
                       borderRadius: 10,
                     }}>
+                      {/* Create new task button */}
+                      <button
+                        onClick={() => setShowCreateTask(true)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          width: '100%',
+                          padding: '12px 14px',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: '#7c3aed',
+                          backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                          border: '1px dashed #7c3aed',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                          marginBottom: 12,
+                        }}
+                      >
+                        <PlusCircle style={{ width: 16, height: 16 }} />
+                        Create New Task
+                      </button>
+
                       <p style={{ fontSize: 13, fontWeight: 500, color: '#4b5563', margin: '0 0 12px 0' }}>
-                        Select a task to add:
+                        Or select an existing task:
                       </p>
                       {availableTasks.length === 0 ? (
                         <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>
-                          All tasks are already in this sprint.
+                          All existing tasks are already in this sprint.
                         </p>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflow: 'auto' }}>
@@ -678,6 +738,144 @@ export function SprintDetailModal({ sprint, isOpen, onClose }: SprintDetailModal
                       >
                         Cancel
                       </button>
+                    </div>
+                  )}
+
+                  {/* Create new task form */}
+                  {showAddTask && showCreateTask && (
+                    <div style={{
+                      marginTop: 12,
+                      padding: 16,
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e5eb',
+                      borderRadius: 10,
+                    }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1e1e2e', margin: '0 0 16px 0' }}>
+                        Create New Task
+                      </p>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {/* Task name */}
+                        <div>
+                          <label style={{ fontSize: 12, fontWeight: 500, color: '#6b7280', display: 'block', marginBottom: 4 }}>
+                            Task Name *
+                          </label>
+                          <input
+                            type="text"
+                            value={newTaskName}
+                            onChange={(e) => setNewTaskName(e.target.value)}
+                            placeholder="Enter task name"
+                            style={{
+                              width: '100%',
+                              padding: '10px 12px',
+                              fontSize: 14,
+                              borderRadius: 8,
+                              border: '1px solid #e5e5eb',
+                              backgroundColor: '#f9fafb',
+                              outline: 'none',
+                              boxSizing: 'border-box',
+                            }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = '#7c3aed'}
+                            onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5eb'}
+                            autoFocus
+                          />
+                        </div>
+
+                        {/* Task description */}
+                        <div>
+                          <label style={{ fontSize: 12, fontWeight: 500, color: '#6b7280', display: 'block', marginBottom: 4 }}>
+                            Description
+                          </label>
+                          <textarea
+                            value={newTaskBlurb}
+                            onChange={(e) => setNewTaskBlurb(e.target.value)}
+                            placeholder="Enter task description (optional)"
+                            rows={2}
+                            style={{
+                              width: '100%',
+                              padding: '10px 12px',
+                              fontSize: 14,
+                              borderRadius: 8,
+                              border: '1px solid #e5e5eb',
+                              backgroundColor: '#f9fafb',
+                              outline: 'none',
+                              boxSizing: 'border-box',
+                              resize: 'none',
+                              fontFamily: 'inherit',
+                            }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = '#7c3aed'}
+                            onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5eb'}
+                          />
+                        </div>
+
+                        {/* Category selector */}
+                        <div>
+                          <label style={{ fontSize: 12, fontWeight: 500, color: '#6b7280', display: 'block', marginBottom: 4 }}>
+                            Category
+                          </label>
+                          <select
+                            value={newTaskCategory}
+                            onChange={(e) => setNewTaskCategory(e.target.value as AssetCategory | "")}
+                            style={{
+                              width: '100%',
+                              padding: '10px 12px',
+                              fontSize: 14,
+                              borderRadius: 8,
+                              border: '1px solid #e5e5eb',
+                              backgroundColor: '#f9fafb',
+                              outline: 'none',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <option value="">No category</option>
+                            {Object.entries(ASSET_CATEGORIES).map(([key, cat]) => (
+                              <option key={key} value={key}>{cat.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                        <button
+                          onClick={() => {
+                            setShowCreateTask(false);
+                            setNewTaskName("");
+                            setNewTaskBlurb("");
+                            setNewTaskCategory("");
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: '#6b7280',
+                            backgroundColor: '#fff',
+                            border: '1px solid #e5e5eb',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Back
+                        </button>
+                        <button
+                          onClick={handleCreateTask}
+                          disabled={!newTaskName.trim() || createAsset.isPending}
+                          style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: newTaskName.trim() ? '#fff' : '#9ca3af',
+                            backgroundColor: newTaskName.trim() ? '#7c3aed' : '#e5e5eb',
+                            border: 'none',
+                            borderRadius: 8,
+                            cursor: newTaskName.trim() ? 'pointer' : 'not-allowed',
+                          }}
+                        >
+                          {createAsset.isPending ? 'Creating...' : 'Create & Add'}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
