@@ -1,63 +1,52 @@
 import { useState } from "react";
-import { GitBranch, CheckCircle2, BookOpen, Plus, Loader2 } from "lucide-react";
-import { usePipelines, usePipeline } from "../hooks/usePipelines";
-import { PipelineCard } from "./PipelineCard";
-import { PipelineDetailModal } from "./PipelineDetailModal";
-import { PipelineForm } from "./PipelineForm";
-import { FinalizePipelineWizard } from "@/features/guides/components/FinalizePipelineWizard";
-import type { PipelineStatus, Pipeline } from "@/types/database";
+import { Zap, CheckCircle2, Plus, Loader2 } from "lucide-react";
+import { useSprints, useSprint } from "../hooks/useSprints";
+import { SprintCard } from "./SprintCard";
+import { SprintDetailModal } from "./SprintDetailModal";
+import { SprintForm } from "./SprintForm";
+import type { SprintStatus, Sprint } from "@/types/database";
 
-type PipelineTab = "active" | "completed" | "finalized";
+type SprintTab = "active" | "completed";
 
-export function PipelinesView() {
-  const [activeTab, setActiveTab] = useState<PipelineTab>("active");
-  const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>(null);
+export function SprintsView() {
+  const [activeTab, setActiveTab] = useState<SprintTab>("active");
+  const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [finalizingPipelineId, setFinalizingPipelineId] = useState<string | null>(null);
 
-  // Get pipelines by status
-  const { data: activePipelines, isLoading: loadingActive } = usePipelines({ status: "active" });
-  const { data: completedPipelines } = usePipelines({ status: "completed" });
-  const { data: finalizedPipelines } = usePipelines({ status: "finalized" });
+  // Get sprints by status
+  const { data: activeSprints, isLoading: loadingActive } = useSprints({ status: "active" });
+  const { data: completedSprints } = useSprints({ status: "completed" });
 
-  // Get selected pipeline details
-  const { data: selectedPipeline } = usePipeline(selectedPipelineId || undefined);
+  // Get selected sprint details
+  const { data: selectedSprint } = useSprint(selectedSprintId || undefined);
 
-  const tabs: { id: PipelineTab; label: string; icon: React.ReactNode; count?: number }[] = [
+  const tabs: { id: SprintTab; label: string; icon: React.ReactNode; count?: number }[] = [
     {
       id: "active",
       label: "Active",
-      icon: <GitBranch style={{ width: 16, height: 16 }} />,
-      count: activePipelines?.length,
+      icon: <Zap style={{ width: 16, height: 16 }} />,
+      count: activeSprints?.length,
     },
     {
       id: "completed",
       label: "Completed",
       icon: <CheckCircle2 style={{ width: 16, height: 16 }} />,
-      count: completedPipelines?.length,
-    },
-    {
-      id: "finalized",
-      label: "Finalized",
-      icon: <BookOpen style={{ width: 16, height: 16 }} />,
-      count: finalizedPipelines?.length,
+      count: completedSprints?.length,
     },
   ];
 
-  const getCurrentPipelines = () => {
+  const getCurrentSprints = () => {
     switch (activeTab) {
       case "active":
-        return activePipelines || [];
+        return activeSprints || [];
       case "completed":
-        return completedPipelines || [];
-      case "finalized":
-        return finalizedPipelines || [];
+        return completedSprints || [];
       default:
         return [];
     }
   };
 
-  const pipelines = getCurrentPipelines();
+  const sprints = getCurrentSprints();
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -77,14 +66,14 @@ export function PipelinesView() {
             marginBottom: 6,
             margin: 0,
           }}>
-            Pipelines
+            Sprints
           </h2>
           <p style={{
             fontSize: 14,
             color: '#6b7280',
             margin: 0,
           }}>
-            Multi-task workflows across departments
+            Group tasks across departments into focused sprints
           </p>
         </div>
 
@@ -112,7 +101,7 @@ export function PipelinesView() {
           }}
         >
           <Plus style={{ width: 16, height: 16 }} />
-          New Pipeline
+          New Sprint
         </button>
       </div>
 
@@ -185,19 +174,17 @@ export function PipelinesView() {
         }}>
           <Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite' }} />
         </div>
-      ) : pipelines.length === 0 ? (
+      ) : sprints.length === 0 ? (
         <div style={{
           textAlign: 'center',
           padding: 48,
           color: '#9ca3af',
         }}>
-          <GitBranch style={{ width: 48, height: 48, marginBottom: 16, opacity: 0.5 }} />
+          <Zap style={{ width: 48, height: 48, marginBottom: 16, opacity: 0.5 }} />
           <p style={{ fontSize: 16, margin: 0 }}>
             {activeTab === "active"
-              ? "No active pipelines. Create one to get started."
-              : activeTab === "completed"
-              ? "No completed pipelines yet."
-              : "No finalized pipelines. Complete a pipeline to finalize it into a guide."}
+              ? "No active sprints. Create one to get started."
+              : "No completed sprints yet."}
           </p>
         </div>
       ) : (
@@ -206,64 +193,48 @@ export function PipelinesView() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
           gap: 16,
         }}>
-          {pipelines.map((pipeline) => (
-            <PipelineCardWrapper
-              key={pipeline.id}
-              pipeline={pipeline}
-              onClick={() => setSelectedPipelineId(pipeline.id)}
+          {sprints.map((sprint) => (
+            <SprintCardWrapper
+              key={sprint.id}
+              sprint={sprint}
+              onClick={() => setSelectedSprintId(sprint.id)}
             />
           ))}
         </div>
       )}
 
-      {/* Pipeline Detail Modal */}
-      <PipelineDetailModal
-        pipeline={selectedPipeline || null}
-        isOpen={!!selectedPipelineId}
-        onClose={() => setSelectedPipelineId(null)}
-        onFinalize={(pipelineId) => {
-          setSelectedPipelineId(null);
-          setFinalizingPipelineId(pipelineId);
-        }}
+      {/* Sprint Detail Modal */}
+      <SprintDetailModal
+        sprint={selectedSprint || null}
+        isOpen={!!selectedSprintId}
+        onClose={() => setSelectedSprintId(null)}
       />
 
-      {/* Create Pipeline Form Modal */}
+      {/* Create Sprint Form Modal */}
       {showForm && (
-        <PipelineForm
+        <SprintForm
           onClose={() => setShowForm(false)}
-        />
-      )}
-
-      {/* Finalize Pipeline Wizard */}
-      {finalizingPipelineId && (
-        <FinalizePipelineWizard
-          pipelineId={finalizingPipelineId}
-          onClose={() => setFinalizingPipelineId(null)}
-          onSuccess={() => {
-            setFinalizingPipelineId(null);
-            setActiveTab("finalized");
-          }}
         />
       )}
     </div>
   );
 }
 
-// Wrapper to fetch task counts for each pipeline
-function PipelineCardWrapper({
-  pipeline,
+// Wrapper to fetch task counts for each sprint
+function SprintCardWrapper({
+  sprint,
   onClick,
 }: {
-  pipeline: Pipeline & { creator: { display_name: string | null; email: string } | null };
+  sprint: Sprint & { creator: { display_name: string | null; email: string } | null };
   onClick: () => void;
 }) {
-  const { data: details } = usePipeline(pipeline.id);
+  const { data: details } = useSprint(sprint.id);
 
   return (
-    <PipelineCard
-      pipeline={pipeline}
+    <SprintCard
+      sprint={sprint}
       taskCount={details?.task_count || 0}
-      completedCount={details?.completed_task_count || 0}
+      implementedCount={details?.implemented_task_count || 0}
       onClick={onClick}
     />
   );

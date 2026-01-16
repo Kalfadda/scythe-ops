@@ -66,34 +66,14 @@ export const FEATURE_REQUEST_STATUSES: Record<FeatureRequestStatus, { label: str
   denied: { label: "Denied", color: "#ef4444" },
 };
 
-// Pipeline status workflow: active -> completed -> finalized
-export type PipelineStatus = "active" | "completed" | "finalized";
+// Sprint status workflow: active -> completed
+export type SprintStatus = "active" | "completed";
 
-// Pipeline status metadata for UI
-export const PIPELINE_STATUSES: Record<PipelineStatus, { label: string; color: string }> = {
+// Sprint status metadata for UI
+export const SPRINT_STATUSES: Record<SprintStatus, { label: string; color: string }> = {
   active: { label: "Active", color: "#7c3aed" },
-  completed: { label: "Completed", color: "#3b82f6" },
-  finalized: { label: "Finalized", color: "#16a34a" },
+  completed: { label: "Completed", color: "#16a34a" },
 };
-
-// Guide content structure (stored as JSONB)
-export interface GuideStep {
-  order: number;
-  title: string;
-  description: string;
-  department: string;
-  estimatedDuration?: string;
-  tips?: string[];
-  originalTaskId?: string;
-}
-
-export interface GuideContent {
-  summary: string;
-  steps: GuideStep[];
-  learnings: string[];
-  resources: { title: string; url?: string }[];
-  contributors: string[];
-}
 
 export type Database = {
   public: {
@@ -362,45 +342,42 @@ export type Database = {
           updated_at?: string;
         };
       };
-      pipelines: {
+      sprints: {
         Row: {
           id: string;
           name: string;
           description: string | null;
-          status: PipelineStatus;
+          status: SprintStatus;
           created_by: string | null;
           created_at: string;
           updated_at: string;
           completed_at: string | null;
-          finalized_at: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           description?: string | null;
-          status?: PipelineStatus;
+          status?: SprintStatus;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
           completed_at?: string | null;
-          finalized_at?: string | null;
         };
         Update: {
           id?: string;
           name?: string;
           description?: string | null;
-          status?: PipelineStatus;
+          status?: SprintStatus;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
           completed_at?: string | null;
-          finalized_at?: string | null;
         };
       };
-      pipeline_tasks: {
+      sprint_tasks: {
         Row: {
           id: string;
-          pipeline_id: string;
+          sprint_id: string;
           asset_id: string;
           order_index: number;
           notes: string | null;
@@ -408,7 +385,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          pipeline_id: string;
+          sprint_id: string;
           asset_id: string;
           order_index?: number;
           notes?: string | null;
@@ -416,7 +393,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          pipeline_id?: string;
+          sprint_id?: string;
           asset_id?: string;
           order_index?: number;
           notes?: string | null;
@@ -428,66 +405,22 @@ export type Database = {
           id: string;
           dependent_task_id: string;
           dependency_task_id: string;
-          pipeline_id: string | null;
+          sprint_id: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           dependent_task_id: string;
           dependency_task_id: string;
-          pipeline_id?: string | null;
+          sprint_id?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           dependent_task_id?: string;
           dependency_task_id?: string;
-          pipeline_id?: string | null;
+          sprint_id?: string | null;
           created_at?: string;
-        };
-      };
-      guides: {
-        Row: {
-          id: string;
-          pipeline_id: string | null;
-          title: string;
-          description: string | null;
-          content: GuideContent;
-          category: string | null;
-          tags: string[] | null;
-          created_by: string | null;
-          created_at: string;
-          updated_at: string;
-          is_published: boolean;
-          view_count: number;
-        };
-        Insert: {
-          id?: string;
-          pipeline_id?: string | null;
-          title: string;
-          description?: string | null;
-          content: GuideContent;
-          category?: string | null;
-          tags?: string[] | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
-          is_published?: boolean;
-          view_count?: number;
-        };
-        Update: {
-          id?: string;
-          pipeline_id?: string | null;
-          title?: string;
-          description?: string | null;
-          content?: GuideContent;
-          category?: string | null;
-          tags?: string[] | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
-          is_published?: boolean;
-          view_count?: number;
         };
       };
     };
@@ -515,18 +448,14 @@ export type Comment = Database["public"]["Tables"]["comments"]["Row"];
 export type CommentInsert = Database["public"]["Tables"]["comments"]["Insert"];
 export type CommentUpdate = Database["public"]["Tables"]["comments"]["Update"];
 
-export type Pipeline = Database["public"]["Tables"]["pipelines"]["Row"];
-export type PipelineInsert = Database["public"]["Tables"]["pipelines"]["Insert"];
-export type PipelineUpdate = Database["public"]["Tables"]["pipelines"]["Update"];
+export type Sprint = Database["public"]["Tables"]["sprints"]["Row"];
+export type SprintInsert = Database["public"]["Tables"]["sprints"]["Insert"];
+export type SprintUpdate = Database["public"]["Tables"]["sprints"]["Update"];
 
-export type PipelineTask = Database["public"]["Tables"]["pipeline_tasks"]["Row"];
-export type PipelineTaskInsert = Database["public"]["Tables"]["pipeline_tasks"]["Insert"];
-export type PipelineTaskUpdate = Database["public"]["Tables"]["pipeline_tasks"]["Update"];
+export type SprintTask = Database["public"]["Tables"]["sprint_tasks"]["Row"];
+export type SprintTaskInsert = Database["public"]["Tables"]["sprint_tasks"]["Insert"];
+export type SprintTaskUpdate = Database["public"]["Tables"]["sprint_tasks"]["Update"];
 
 export type TaskDependency = Database["public"]["Tables"]["task_dependencies"]["Row"];
 export type TaskDependencyInsert = Database["public"]["Tables"]["task_dependencies"]["Insert"];
 export type TaskDependencyUpdate = Database["public"]["Tables"]["task_dependencies"]["Update"];
-
-export type Guide = Database["public"]["Tables"]["guides"]["Row"];
-export type GuideInsert = Database["public"]["Tables"]["guides"]["Insert"];
-export type GuideUpdate = Database["public"]["Tables"]["guides"]["Update"];

@@ -1,47 +1,47 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, GitBranch, Plus, Trash2, ArrowRight, CheckCircle2, Clock, AlertCircle, BookOpen, Edit2, Link2 } from "lucide-react";
-import type { PipelineWithDetails } from "../hooks/usePipelines";
-import { usePipelineMutations } from "../hooks/usePipelineMutations";
-import { usePipelineDependencies, useTaskDependencyMutations } from "../hooks/useTaskDependencies";
+import { X, Zap, Plus, Trash2, CheckCircle2, AlertCircle, Edit2, Link2 } from "lucide-react";
+import type { SprintWithDetails } from "../hooks/useSprints";
+import { useSprintMutations } from "../hooks/useSprintMutations";
+import { useSprintDependencies, useTaskDependencyMutations } from "../hooks/useTaskDependencies";
 import { useAssets } from "@/features/assets/hooks/useAssets";
-import { PIPELINE_STATUSES, ASSET_CATEGORIES, type Asset } from "@/types/database";
+import { SPRINT_STATUSES, ASSET_CATEGORIES, type Asset } from "@/types/database";
 
-interface PipelineDetailModalProps {
-  pipeline: PipelineWithDetails | null;
+interface SprintDetailModalProps {
+  sprint: SprintWithDetails | null;
   isOpen: boolean;
   onClose: () => void;
-  onFinalize?: (pipelineId: string) => void;
 }
 
-export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: PipelineDetailModalProps) {
+export function SprintDetailModal({ sprint, isOpen, onClose }: SprintDetailModalProps) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddDependency, setShowAddDependency] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
 
-  const { updatePipeline, deletePipeline, removeTaskFromPipeline, addTaskToPipeline } = usePipelineMutations();
-  const { data: dependencies = [] } = usePipelineDependencies(pipeline?.id);
+  const { updateSprint, deleteSprint, removeTaskFromSprint, addTaskToSprint } = useSprintMutations();
+  const { data: dependencies = [] } = useSprintDependencies(sprint?.id);
   const { addDependency, removeDependencyById } = useTaskDependencyMutations();
 
-  // Get all tasks for adding to pipeline
+  // Get all tasks for adding to sprint
   const { data: allTasks = [] } = useAssets();
 
-  if (!pipeline) return null;
+  if (!sprint) return null;
 
-  const status = PIPELINE_STATUSES[pipeline.status];
-  const progress = pipeline.task_count > 0
-    ? Math.round((pipeline.completed_task_count / pipeline.task_count) * 100)
+  const status = SPRINT_STATUSES[sprint.status];
+  // Progress is based on implemented tasks only
+  const progress = sprint.task_count > 0
+    ? Math.round((sprint.implemented_task_count / sprint.task_count) * 100)
     : 0;
 
-  const tasksInPipeline = new Set(pipeline.tasks.map(t => t.id));
-  const availableTasks = allTasks.filter(t => !tasksInPipeline.has(t.id));
+  const tasksInSprint = new Set(sprint.tasks.map(t => t.id));
+  const availableTasks = allTasks.filter(t => !tasksInSprint.has(t.id));
 
   const handleSave = () => {
     if (!editName.trim()) return;
-    updatePipeline.mutate({
-      id: pipeline.id,
+    updateSprint.mutate({
+      id: sprint.id,
       name: editName.trim(),
       description: editDescription.trim() || undefined,
     });
@@ -49,36 +49,29 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
   };
 
   const handleStartEdit = () => {
-    setEditName(pipeline.name);
-    setEditDescription(pipeline.description || "");
+    setEditName(sprint.name);
+    setEditDescription(sprint.description || "");
     setIsEditing(true);
   };
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this pipeline? This won't delete the tasks, only the pipeline grouping.")) {
-      deletePipeline.mutate(pipeline.id);
+    if (confirm("Are you sure you want to delete this sprint? This won't delete the tasks, only the sprint grouping.")) {
+      deleteSprint.mutate(sprint.id);
       onClose();
     }
   };
 
-  const handleMarkCompleted = () => {
-    updatePipeline.mutate({
-      id: pipeline.id,
-      status: "completed",
-    });
-  };
-
   const handleAddTask = (assetId: string) => {
-    addTaskToPipeline.mutate({
-      pipelineId: pipeline.id,
+    addTaskToSprint.mutate({
+      sprintId: sprint.id,
       assetId,
     });
     setShowAddTask(false);
   };
 
   const handleRemoveTask = (assetId: string) => {
-    removeTaskFromPipeline.mutate({
-      pipelineId: pipeline.id,
+    removeTaskFromSprint.mutate({
+      sprintId: sprint.id,
       assetId,
     });
   };
@@ -87,7 +80,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
     addDependency.mutate({
       dependentTaskId,
       dependencyTaskId,
-      pipelineId: pipeline.id,
+      sprintId: sprint.id,
     });
     setShowAddDependency(null);
   };
@@ -172,7 +165,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}>
-                      <GitBranch style={{ width: 18, height: 18, color: status.color }} />
+                      <Zap style={{ width: 18, height: 18, color: status.color }} />
                     </div>
                     <span style={{
                       padding: '4px 10px',
@@ -184,6 +177,18 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                     }}>
                       {status.label}
                     </span>
+                    {progress === 100 && sprint.status === "active" && (
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: 999,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                        color: '#16a34a',
+                      }}>
+                        Auto-completing...
+                      </span>
+                    )}
                   </div>
                   {isEditing ? (
                     <input
@@ -212,13 +217,13 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                       color: '#1e1e2e',
                       margin: 0,
                     }}>
-                      {pipeline.name}
+                      {sprint.name}
                     </h2>
                   )}
                 </div>
 
                 <div style={{ display: 'flex', gap: 4 }}>
-                  {!isEditing && pipeline.status === "active" && (
+                  {!isEditing && sprint.status === "active" && (
                     <button
                       onClick={handleStartEdit}
                       style={{
@@ -233,7 +238,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                         color: '#9ca3af',
                         cursor: 'pointer',
                       }}
-                      title="Edit pipeline"
+                      title="Edit sprint"
                     >
                       <Edit2 style={{ width: 18, height: 18 }} />
                     </button>
@@ -283,14 +288,14 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                     onFocus={(e) => e.currentTarget.style.borderColor = '#7c3aed'}
                     onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5eb'}
                   />
-                ) : pipeline.description ? (
+                ) : sprint.description ? (
                   <p style={{
                     fontSize: 14,
                     color: '#6b7280',
                     lineHeight: 1.6,
                     margin: '0 0 20px 0',
                   }}>
-                    {pipeline.description}
+                    {sprint.description}
                   </p>
                 ) : null}
 
@@ -303,10 +308,10 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                     marginBottom: 8,
                   }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#4b5563' }}>
-                      Progress
+                      Progress (Implemented Tasks)
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#1e1e2e' }}>
-                      {pipeline.completed_task_count}/{pipeline.task_count} tasks ({progress}%)
+                      {sprint.implemented_task_count}/{sprint.task_count} tasks ({progress}%)
                     </span>
                   </div>
                   <div style={{
@@ -325,6 +330,9 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                       }}
                     />
                   </div>
+                  <p style={{ fontSize: 12, color: '#9ca3af', margin: '8px 0 0 0' }}>
+                    Sprint auto-completes when all tasks reach "Implemented" status
+                  </p>
                 </div>
 
                 {/* Tasks */}
@@ -343,9 +351,9 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                       letterSpacing: '0.05em',
                       margin: 0,
                     }}>
-                      Tasks in Pipeline
+                      Tasks in Sprint
                     </h3>
-                    {pipeline.status === "active" && (
+                    {sprint.status === "active" && (
                       <button
                         onClick={() => setShowAddTask(true)}
                         style={{
@@ -368,7 +376,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                     )}
                   </div>
 
-                  {pipeline.tasks.length === 0 ? (
+                  {sprint.tasks.length === 0 ? (
                     <div style={{
                       padding: 32,
                       textAlign: 'center',
@@ -377,14 +385,15 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                       borderRadius: 10,
                       border: '1px dashed #e5e5eb',
                     }}>
-                      No tasks yet. Add tasks to build your pipeline.
+                      No tasks yet. Add tasks to build your sprint.
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {pipeline.tasks.map((task, index) => {
+                      {sprint.tasks.map((task, index) => {
                         const taskDeps = getTaskDependencies(task.id);
                         const taskDependents = getTaskDependents(task.id);
-                        const isCompleted = task.status === "completed" || task.status === "implemented";
+                        const isImplemented = task.status === "implemented";
+                        const isCompleted = task.status === "completed" || isImplemented;
                         const category = task.category ? ASSET_CATEGORIES[task.category] : null;
 
                         return (
@@ -395,9 +404,9 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                                 alignItems: 'center',
                                 gap: 12,
                                 padding: 14,
-                                backgroundColor: isCompleted ? 'rgba(22, 163, 74, 0.05)' : '#f9fafb',
+                                backgroundColor: isImplemented ? 'rgba(22, 163, 74, 0.05)' : isCompleted ? 'rgba(59, 130, 246, 0.05)' : '#f9fafb',
                                 borderRadius: 10,
-                                border: `1px solid ${isCompleted ? 'rgba(22, 163, 74, 0.2)' : '#e5e5eb'}`,
+                                border: `1px solid ${isImplemented ? 'rgba(22, 163, 74, 0.2)' : isCompleted ? 'rgba(59, 130, 246, 0.2)' : '#e5e5eb'}`,
                               }}
                             >
                               {/* Step number */}
@@ -405,8 +414,8 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                                 width: 28,
                                 height: 28,
                                 borderRadius: '50%',
-                                backgroundColor: isCompleted ? '#16a34a' : '#e5e5eb',
-                                color: isCompleted ? '#fff' : '#6b7280',
+                                backgroundColor: isImplemented ? '#16a34a' : isCompleted ? '#3b82f6' : '#e5e5eb',
+                                color: isImplemented || isCompleted ? '#fff' : '#6b7280',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -414,7 +423,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                                 fontWeight: 600,
                                 flexShrink: 0,
                               }}>
-                                {isCompleted ? <CheckCircle2 style={{ width: 16, height: 16 }} /> : index + 1}
+                                {isImplemented ? <CheckCircle2 style={{ width: 16, height: 16 }} /> : index + 1}
                               </div>
 
                               {/* Task info */}
@@ -439,6 +448,16 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                                       {category.label}
                                     </span>
                                   )}
+                                  <span style={{
+                                    padding: '2px 8px',
+                                    borderRadius: 999,
+                                    fontSize: 10,
+                                    fontWeight: 500,
+                                    backgroundColor: isImplemented ? 'rgba(22, 163, 74, 0.1)' : isCompleted ? 'rgba(59, 130, 246, 0.1)' : '#f3f4f6',
+                                    color: isImplemented ? '#16a34a' : isCompleted ? '#3b82f6' : '#6b7280',
+                                  }}>
+                                    {task.status}
+                                  </span>
                                 </div>
                                 {taskDeps.length > 0 && (
                                   <div style={{
@@ -456,7 +475,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                               </div>
 
                               {/* Actions */}
-                              {pipeline.status === "active" && (
+                              {sprint.status === "active" && (
                                 <div style={{ display: 'flex', gap: 4 }}>
                                   <button
                                     onClick={() => setShowAddDependency(task.id)}
@@ -490,7 +509,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                                       color: '#9ca3af',
                                       cursor: 'pointer',
                                     }}
-                                    title="Remove from pipeline"
+                                    title="Remove from sprint"
                                   >
                                     <Trash2 style={{ width: 14, height: 14 }} />
                                   </button>
@@ -511,7 +530,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                                   Select a task this depends on:
                                 </p>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                  {pipeline.tasks
+                                  {sprint.tasks
                                     .filter(t => t.id !== task.id && !taskDeps.some(d => d.dependency_task_id === t.id))
                                     .map(t => (
                                       <button
@@ -548,7 +567,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                             )}
 
                             {/* Connector line */}
-                            {index < pipeline.tasks.length - 1 && (
+                            {index < sprint.tasks.length - 1 && (
                               <div style={{
                                 display: 'flex',
                                 justifyContent: 'center',
@@ -581,7 +600,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                       </p>
                       {availableTasks.length === 0 ? (
                         <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>
-                          All tasks are already in this pipeline.
+                          All tasks are already in this sprint.
                         </p>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflow: 'auto' }}>
@@ -704,48 +723,7 @@ export function PipelineDetailModal({ pipeline, isOpen, onClose, onFinalize }: P
                     </button>
 
                     <div style={{ display: 'flex', gap: 12 }}>
-                      {pipeline.status === "active" && progress === 100 && (
-                        <button
-                          onClick={handleMarkCompleted}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '10px 20px',
-                            fontSize: 14,
-                            fontWeight: 600,
-                            color: '#fff',
-                            backgroundColor: '#3b82f6',
-                            border: 'none',
-                            borderRadius: 10,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <CheckCircle2 style={{ width: 16, height: 16 }} />
-                          Mark Completed
-                        </button>
-                      )}
-                      {pipeline.status === "completed" && onFinalize && (
-                        <button
-                          onClick={() => onFinalize(pipeline.id)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '10px 20px',
-                            fontSize: 14,
-                            fontWeight: 600,
-                            color: '#fff',
-                            backgroundColor: '#16a34a',
-                            border: 'none',
-                            borderRadius: 10,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <BookOpen style={{ width: 16, height: 16 }} />
-                          Finalize as Guide
-                        </button>
-                      )}
+                      {/* No manual completion button - sprints auto-complete */}
                     </div>
                   </>
                 )}

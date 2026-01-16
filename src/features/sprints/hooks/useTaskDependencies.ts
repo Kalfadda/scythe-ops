@@ -53,12 +53,12 @@ export function useTaskDependents(assetId: string | undefined) {
   });
 }
 
-// Get all dependencies for a pipeline
-export function usePipelineDependencies(pipelineId: string | undefined) {
+// Get all dependencies for a sprint
+export function useSprintDependencies(sprintId: string | undefined) {
   return useQuery({
-    queryKey: ["pipeline_dependencies", pipelineId],
+    queryKey: ["sprint_dependencies", sprintId],
     queryFn: async (): Promise<DependencyWithTask[]> => {
-      if (!pipelineId) return [];
+      if (!sprintId) return [];
 
       const { data, error } = await supabase
         .from("task_dependencies")
@@ -67,12 +67,12 @@ export function usePipelineDependencies(pipelineId: string | undefined) {
           dependency_task:assets!dependency_task_id(id, name, status, category),
           dependent_task:assets!dependent_task_id(id, name, status, category)
         `)
-        .eq("pipeline_id", pipelineId);
+        .eq("sprint_id", sprintId);
 
       if (error) throw error;
       return (data || []) as DependencyWithTask[];
     },
-    enabled: !!pipelineId,
+    enabled: !!sprintId,
   });
 }
 
@@ -104,18 +104,18 @@ export function useTaskDependencyMutations() {
     mutationFn: async ({
       dependentTaskId,
       dependencyTaskId,
-      pipelineId,
+      sprintId,
     }: {
       dependentTaskId: string;
       dependencyTaskId: string;
-      pipelineId?: string;
+      sprintId?: string;
     }) => {
       const { data, error } = await supabase
         .from("task_dependencies")
         .insert({
           dependent_task_id: dependentTaskId,
           dependency_task_id: dependencyTaskId,
-          pipeline_id: pipelineId || null,
+          sprint_id: sprintId || null,
         })
         .select()
         .single();
@@ -126,9 +126,9 @@ export function useTaskDependencyMutations() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["task_dependencies", variables.dependentTaskId] });
       queryClient.invalidateQueries({ queryKey: ["task_dependents", variables.dependencyTaskId] });
-      if (variables.pipelineId) {
-        queryClient.invalidateQueries({ queryKey: ["pipeline_dependencies", variables.pipelineId] });
-        queryClient.invalidateQueries({ queryKey: ["pipeline", variables.pipelineId] });
+      if (variables.sprintId) {
+        queryClient.invalidateQueries({ queryKey: ["sprint_dependencies", variables.sprintId] });
+        queryClient.invalidateQueries({ queryKey: ["sprint", variables.sprintId] });
       }
     },
   });
@@ -152,8 +152,8 @@ export function useTaskDependencyMutations() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["task_dependencies", variables.dependentTaskId] });
       queryClient.invalidateQueries({ queryKey: ["task_dependents", variables.dependencyTaskId] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline_dependencies"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline"] });
+      queryClient.invalidateQueries({ queryKey: ["sprint_dependencies"] });
+      queryClient.invalidateQueries({ queryKey: ["sprint"] });
     },
   });
 
@@ -169,8 +169,8 @@ export function useTaskDependencyMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["task_dependencies"] });
       queryClient.invalidateQueries({ queryKey: ["task_dependents"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline_dependencies"] });
-      queryClient.invalidateQueries({ queryKey: ["pipeline"] });
+      queryClient.invalidateQueries({ queryKey: ["sprint_dependencies"] });
+      queryClient.invalidateQueries({ queryKey: ["sprint"] });
     },
   });
 

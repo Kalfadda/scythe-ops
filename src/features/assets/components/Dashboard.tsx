@@ -5,6 +5,7 @@ import { relaunch } from "@tauri-apps/plugin-process";
 import { useAuth } from "@/features/auth";
 import { useAssets } from "../hooks/useAssets";
 import { useAssetRealtime } from "../hooks/useAssetRealtime";
+import { useCommentRealtime } from "../hooks/useCommentRealtime";
 import { AssetList } from "./AssetList";
 import { AssetForm } from "./AssetForm";
 import { UpdateNotification } from "@/components/UpdateNotification";
@@ -12,12 +13,11 @@ import { Compare } from "@/features/tools";
 import { ScheduleView } from "@/features/schedule";
 import { ModelingView } from "@/features/modeling";
 import { FeatureRequestsView } from "@/features/featurerequests";
-import { PipelinesView } from "@/features/pipelines/components/PipelinesView";
-import { GuidesLibrary } from "@/features/guides/components/GuidesLibrary";
-import { Box, LogOut, Settings, Clock, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays, Wrench, ChevronDown, GitCompare, Cpu, Lightbulb, FileQuestion, PlayCircle, GitBranch, BookOpen } from "lucide-react";
+import { SprintsView } from "@/features/sprints/components/SprintsView";
+import { Box, LogOut, Settings, Clock, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays, Wrench, ChevronDown, GitCompare, Cpu, Lightbulb, FileQuestion, PlayCircle, Zap } from "lucide-react";
 import { ASSET_CATEGORIES, type AssetCategory, type AssetStatus } from "@/types/database";
 
-type MainView = "tasks" | "schedule" | "modelingrequests" | "compare" | "featurerequests" | "pipelines" | "library";
+type MainView = "tasks" | "schedule" | "modelingrequests" | "compare" | "featurerequests" | "sprints";
 type ToolItem = { id: MainView; label: string; icon: React.ReactNode };
 type TechnicalItem = { id: MainView; label: string; icon: React.ReactNode };
 type ModelingItem = { id: MainView; label: string; icon: React.ReactNode };
@@ -70,6 +70,7 @@ export function Dashboard() {
   const [modelingExpanded, setModelingExpanded] = useState(false);
 
   useAssetRealtime();
+  useCommentRealtime();
 
   const toolItems: ToolItem[] = [
     { id: "compare", label: "Compare", icon: <GitCompare style={{ width: 18, height: 18 }} /> },
@@ -118,8 +119,7 @@ export function Dashboard() {
   const sidebarItems: { id: MainView; label: string; icon: React.ReactNode }[] = [
     { id: "tasks", label: "Tasks", icon: <ListTodo style={{ width: 20, height: 20 }} /> },
     { id: "schedule", label: "Schedule", icon: <CalendarDays style={{ width: 20, height: 20 }} /> },
-    { id: "pipelines", label: "Pipelines", icon: <GitBranch style={{ width: 20, height: 20 }} /> },
-    { id: "library", label: "Library", icon: <BookOpen style={{ width: 20, height: 20 }} /> },
+    { id: "sprints", label: "Sprints", icon: <Zap style={{ width: 20, height: 20 }} /> },
   ];
 
   return (
@@ -708,15 +708,9 @@ export function Dashboard() {
           </main>
         )}
 
-        {mainView === "pipelines" && (
+        {mainView === "sprints" && (
           <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
-            <PipelinesView />
-          </main>
-        )}
-
-        {mainView === "library" && (
-          <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px' }}>
-            <GuidesLibrary />
+            <SprintsView />
           </main>
         )}
       </div>

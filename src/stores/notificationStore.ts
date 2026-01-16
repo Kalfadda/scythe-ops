@@ -14,7 +14,8 @@ export type NotificationType =
   | "model_request_denied"
   | "feature_request_created"
   | "feature_request_accepted"
-  | "feature_request_denied";
+  | "feature_request_denied"
+  | "comment_created";
 
 export type NotificationVariant = "success" | "info" | "warning" | "error";
 
@@ -172,6 +173,12 @@ const notificationConfigs: Record<
     messageOwn: (name) => `You denied "${name}"`,
     messageOther: (actor, name) => `${actor} denied "${name}"`,
     variant: "warning",
+  },
+  comment_created: {
+    title: "New Comment",
+    messageOwn: (name) => `You commented on "${name}"`,
+    messageOther: (actor, name) => `${actor} commented on "${name}"`,
+    variant: "info",
   },
 };
 

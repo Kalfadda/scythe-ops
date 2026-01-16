@@ -1,19 +1,19 @@
 import { motion } from "motion/react";
-import { GitBranch, CheckCircle2, Clock, ChevronRight } from "lucide-react";
-import type { PipelineWithCreator } from "../hooks/usePipelines";
-import { PIPELINE_STATUSES } from "@/types/database";
+import { Zap, CheckCircle2, Clock, ChevronRight } from "lucide-react";
+import type { SprintWithCreator } from "../hooks/useSprints";
+import { SPRINT_STATUSES } from "@/types/database";
 
-interface PipelineCardProps {
-  pipeline: PipelineWithCreator;
+interface SprintCardProps {
+  sprint: SprintWithCreator;
   taskCount?: number;
-  completedCount?: number;
+  implementedCount?: number;
   onClick: () => void;
 }
 
-export function PipelineCard({ pipeline, taskCount = 0, completedCount = 0, onClick }: PipelineCardProps) {
-  const status = PIPELINE_STATUSES[pipeline.status];
-  const progress = taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0;
-  const creatorName = pipeline.creator?.display_name || pipeline.creator?.email?.split('@')[0] || "Unknown";
+export function SprintCard({ sprint, taskCount = 0, implementedCount = 0, onClick }: SprintCardProps) {
+  const status = SPRINT_STATUSES[sprint.status];
+  const progress = taskCount > 0 ? Math.round((implementedCount / taskCount) * 100) : 0;
+  const creatorName = sprint.creator?.display_name || sprint.creator?.email?.split('@')[0] || "Unknown";
 
   return (
     <motion.div
@@ -47,7 +47,7 @@ export function PipelineCard({ pipeline, taskCount = 0, completedCount = 0, onCl
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <GitBranch style={{ width: 18, height: 18, color: status.color }} />
+            <Zap style={{ width: 18, height: 18, color: status.color }} />
           </div>
           <div>
             <h3 style={{
@@ -57,7 +57,7 @@ export function PipelineCard({ pipeline, taskCount = 0, completedCount = 0, onCl
               margin: 0,
               lineHeight: 1.3,
             }}>
-              {pipeline.name}
+              {sprint.name}
             </h3>
             <span style={{
               fontSize: 12,
@@ -80,7 +80,7 @@ export function PipelineCard({ pipeline, taskCount = 0, completedCount = 0, onCl
       </div>
 
       {/* Description */}
-      {pipeline.description && (
+      {sprint.description && (
         <p style={{
           fontSize: 13,
           color: '#6b7280',
@@ -91,7 +91,7 @@ export function PipelineCard({ pipeline, taskCount = 0, completedCount = 0, onCl
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
         }}>
-          {pipeline.description}
+          {sprint.description}
         </p>
       )}
 
@@ -139,13 +139,13 @@ export function PipelineCard({ pipeline, taskCount = 0, completedCount = 0, onCl
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7280' }}>
             <CheckCircle2 style={{ width: 14, height: 14 }} />
             <span style={{ fontSize: 12 }}>
-              {completedCount}/{taskCount} tasks
+              {implementedCount}/{taskCount} implemented
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9ca3af' }}>
             <Clock style={{ width: 14, height: 14 }} />
             <span style={{ fontSize: 12 }}>
-              {formatDate(pipeline.created_at)}
+              {formatDate(sprint.created_at)}
             </span>
           </div>
         </div>

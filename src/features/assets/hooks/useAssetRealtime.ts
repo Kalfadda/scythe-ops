@@ -7,6 +7,7 @@ import {
   createNotificationConfig,
   NotificationType,
 } from "@/stores/notificationStore";
+import { checkSprintAutoComplete } from "@/features/sprints/hooks/useSprintMutations";
 
 export function useAssetRealtime() {
   const queryClient = useQueryClient();
@@ -56,6 +57,24 @@ export function useAssetRealtime() {
               } else if (newStatus === "implemented") {
                 actorId = newRecord.implemented_by as string;
                 notificationType = "task_implemented";
+
+                // Check if this task is in any sprint and trigger auto-complete check
+                const assetId = newRecord.id as string;
+                if (assetId) {
+                  const { data: sprintTasks } = await supabase
+                    .from("sprint_tasks")
+                    .select("sprint_id")
+                    .eq("asset_id", assetId);
+
+                  if (sprintTasks && sprintTasks.length > 0) {
+                    for (const st of sprintTasks) {
+                      await checkSprintAutoComplete(st.sprint_id);
+                    }
+                    // Invalidate sprint queries to refresh UI
+                    queryClient.invalidateQueries({ queryKey: ["sprints"] });
+                    queryClient.invalidateQueries({ queryKey: ["sprint"] });
+                  }
+                }
               }
             } else if (oldRecord.claimed_by !== newRecord.claimed_by) {
               if (newRecord.claimed_by) {

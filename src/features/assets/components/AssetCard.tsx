@@ -1,9 +1,9 @@
 import { motion } from "motion/react";
-import { Clock, User, X, Tag, Flag, UserCheck, GitBranch } from "lucide-react";
+import { Clock, User, X, Tag, Flag, UserCheck, Zap } from "lucide-react";
 import type { AssetWithCreator } from "../hooks/useAssets";
 import { getDaysUntilDelete } from "../hooks/useAssets";
-import { usePipelinesForTask } from "@/features/pipelines/hooks/usePipelines";
-import { ASSET_CATEGORIES, ASSET_PRIORITIES, PIPELINE_STATUSES } from "@/types/database";
+import { useSprintsForTask } from "@/features/sprints/hooks/useSprints";
+import { ASSET_CATEGORIES, ASSET_PRIORITIES, SPRINT_STATUSES } from "@/types/database";
 
 // Keyframes for the claimed glow effect
 const claimedGlowKeyframes = `
@@ -72,9 +72,9 @@ export function AssetCard({
   const isClaimed = !!asset.claimed_by;
   const claimerName = asset.claimer?.display_name || asset.claimer?.email || null;
 
-  // Get pipelines this task belongs to
-  const { data: pipelines = [] } = usePipelinesForTask(asset.id);
-  const activePipeline = pipelines.find(p => p.status === "active" || p.status === "completed");
+  // Get sprints this task belongs to
+  const { data: sprints = [] } = useSprintsForTask(asset.id);
+  const activeSprint = sprints.find(s => s.status === "active" || s.status === "completed");
 
   return (
     <motion.div
@@ -206,28 +206,28 @@ export function AssetCard({
                 </motion.span>
               )}
 
-              {/* Pipeline badge */}
-              {activePipeline && (
+              {/* Sprint badge */}
+              {activeSprint && (
                 <span style={{
                   borderRadius: 999,
                   padding: '3px 8px',
                   fontSize: 11,
                   fontWeight: 500,
-                  backgroundColor: `${PIPELINE_STATUSES[activePipeline.status].color}18`,
-                  color: PIPELINE_STATUSES[activePipeline.status].color,
+                  backgroundColor: `${SPRINT_STATUSES[activeSprint.status].color}18`,
+                  color: SPRINT_STATUSES[activeSprint.status].color,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 4,
                   maxWidth: 120,
                   overflow: 'hidden',
                 }}>
-                  <GitBranch style={{ width: 10, height: 10, flexShrink: 0 }} />
+                  <Zap style={{ width: 10, height: 10, flexShrink: 0 }} />
                   <span style={{
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}>
-                    {activePipeline.name}
+                    {activeSprint.name}
                   </span>
                 </span>
               )}

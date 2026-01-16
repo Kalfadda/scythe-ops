@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, User, Clock, CheckCircle2, Tag, Flag, ArrowLeft, ArrowRight, Archive, Edit2, ChevronDown, UserCheck, UserMinus, CalendarDays, MessageCircle, Send, Trash2, GitBranch } from "lucide-react";
+import { X, User, Clock, CheckCircle2, Tag, Flag, ArrowLeft, ArrowRight, Archive, Edit2, ChevronDown, UserCheck, UserMinus, CalendarDays, MessageCircle, Send, Trash2, Zap } from "lucide-react";
 import type { AssetWithCreator } from "../hooks/useAssets";
 import { getDaysUntilDelete } from "../hooks/useAssets";
 import { useComments } from "../hooks/useComments";
 import { useCommentMutations } from "../hooks/useCommentMutations";
-import { usePipelinesForTask } from "@/features/pipelines/hooks/usePipelines";
-import { ASSET_CATEGORIES, ASSET_PRIORITIES, PIPELINE_STATUSES, type AssetCategory, type AssetPriority } from "@/types/database";
+import { useSprintsForTask } from "@/features/sprints/hooks/useSprints";
+import { ASSET_CATEGORIES, ASSET_PRIORITIES, SPRINT_STATUSES, type AssetCategory, type AssetPriority } from "@/types/database";
 import { useAuthStore } from "@/stores/authStore";
 
 interface AssetDetailModalProps {
@@ -76,9 +76,9 @@ export function AssetDetailModal({
   const { data: comments = [], isLoading: commentsLoading } = useComments(asset?.id);
   const { createComment, deleteComment } = useCommentMutations();
 
-  // Pipeline info
-  const { data: pipelines = [] } = usePipelinesForTask(asset?.id);
-  const activePipeline = pipelines.find(p => p.status === "active" || p.status === "completed");
+  // Sprint info
+  const { data: sprints = [] } = useSprintsForTask(asset?.id);
+  const activeSprint = sprints.find(s => s.status === "active" || s.status === "completed");
 
   // Reset edit state when asset changes or modal closes
   useEffect(() => {
@@ -289,21 +289,21 @@ export function AssetDetailModal({
                     </span>
                   )}
 
-                  {/* Pipeline badge */}
-                  {activePipeline && (
+                  {/* Sprint badge */}
+                  {activeSprint && (
                     <span style={{
                       padding: '4px 10px',
                       borderRadius: 999,
                       fontSize: 12,
                       fontWeight: 500,
-                      backgroundColor: `${PIPELINE_STATUSES[activePipeline.status].color}20`,
-                      color: PIPELINE_STATUSES[activePipeline.status].color,
+                      backgroundColor: `${SPRINT_STATUSES[activeSprint.status].color}20`,
+                      color: SPRINT_STATUSES[activeSprint.status].color,
                       display: 'flex',
                       alignItems: 'center',
                       gap: 5,
                     }}>
-                      <GitBranch style={{ width: 12, height: 12 }} />
-                      {activePipeline.name}
+                      <Zap style={{ width: 12, height: 12 }} />
+                      {activeSprint.name}
                     </span>
                   )}
                 </div>

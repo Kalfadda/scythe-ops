@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, GitBranch } from "lucide-react";
-import { usePipelineMutations } from "../hooks/usePipelineMutations";
+import { X, Zap } from "lucide-react";
+import { useSprintMutations } from "../hooks/useSprintMutations";
 
-interface PipelineFormProps {
+interface SprintFormProps {
   onClose: () => void;
 }
 
-export function PipelineForm({ onClose }: PipelineFormProps) {
+export function SprintForm({ onClose }: SprintFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const { createPipeline } = usePipelineMutations();
+  const { createSprint } = useSprintMutations();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    createPipeline.mutate(
+    createSprint.mutate(
       {
         name: name.trim(),
         description: description.trim() || undefined,
@@ -92,7 +92,7 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <GitBranch style={{ width: 20, height: 20, color: '#7c3aed' }} />
+                <Zap style={{ width: 20, height: 20, color: '#7c3aed' }} />
               </div>
               <div>
                 <h2 style={{
@@ -101,14 +101,14 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
                   color: '#1e1e2e',
                   margin: 0,
                 }}>
-                  New Pipeline
+                  New Sprint
                 </h2>
                 <p style={{
                   fontSize: 13,
                   color: '#6b7280',
                   margin: 0,
                 }}>
-                  Create a workflow for related tasks
+                  Group related tasks into a focused sprint
                 </p>
               </div>
             </div>
@@ -143,13 +143,13 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
                   color: '#4b5563',
                   marginBottom: 8,
                 }}>
-                  Pipeline Name *
+                  Sprint Name *
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Character Animation Pipeline"
+                  placeholder="e.g., Q1 Character System Sprint"
                   style={{
                     width: '100%',
                     padding: '12px 14px',
@@ -180,7 +180,7 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe what this pipeline accomplishes..."
+                  placeholder="Describe the goal of this sprint..."
                   rows={3}
                   style={{
                     width: '100%',
@@ -198,6 +198,16 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
                   onBlur={(e) => e.currentTarget.style.borderColor = '#e5e5eb'}
                 />
               </div>
+
+              {/* Info text */}
+              <p style={{
+                fontSize: 12,
+                color: '#9ca3af',
+                margin: 0,
+                lineHeight: 1.5,
+              }}>
+                Sprints automatically complete when all their tasks reach "Implemented" status.
+              </p>
             </div>
 
             {/* Footer */}
@@ -227,7 +237,7 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
               </button>
               <button
                 type="submit"
-                disabled={!name.trim() || createPipeline.isPending}
+                disabled={!name.trim() || createSprint.isPending}
                 style={{
                   padding: '10px 20px',
                   fontSize: 14,
@@ -239,7 +249,7 @@ export function PipelineForm({ onClose }: PipelineFormProps) {
                   cursor: name.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
-                {createPipeline.isPending ? 'Creating...' : 'Create Pipeline'}
+                {createSprint.isPending ? 'Creating...' : 'Create Sprint'}
               </button>
             </div>
           </form>
