@@ -69,6 +69,26 @@ export const FEATURE_REQUEST_STATUSES: Record<FeatureRequestStatus, { label: str
 // Sprint status workflow: active -> completed
 export type SprintStatus = "active" | "completed";
 
+// Persistent notification types (for activity log)
+export type PersistentNotificationType =
+  | "task_created"
+  | "task_completed"
+  | "task_in_progress"
+  | "task_implemented"
+  | "task_claimed"
+  | "task_unclaimed"
+  | "schedule_created"
+  | "schedule_updated"
+  | "model_request_created"
+  | "model_request_accepted"
+  | "model_request_denied"
+  | "feature_request_created"
+  | "feature_request_accepted"
+  | "feature_request_denied"
+  | "comment_created";
+
+export type PersistentNotificationVariant = "success" | "info" | "warning" | "error";
+
 // Sprint status metadata for UI
 export const SPRINT_STATUSES: Record<SprintStatus, { label: string; color: string }> = {
   active: { label: "Active", color: "#7c3aed" },
@@ -426,6 +446,47 @@ export type Database = {
           created_at?: string;
         };
       };
+      notifications: {
+        Row: {
+          id: string;
+          type: PersistentNotificationType;
+          variant: PersistentNotificationVariant;
+          title: string;
+          message: string;
+          actor_id: string | null;
+          actor_name: string | null;
+          item_name: string | null;
+          item_id: string | null;
+          item_type: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          type: PersistentNotificationType;
+          variant: PersistentNotificationVariant;
+          title: string;
+          message: string;
+          actor_id?: string | null;
+          actor_name?: string | null;
+          item_name?: string | null;
+          item_id?: string | null;
+          item_type?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          type?: PersistentNotificationType;
+          variant?: PersistentNotificationVariant;
+          title?: string;
+          message?: string;
+          actor_id?: string | null;
+          actor_name?: string | null;
+          item_name?: string | null;
+          item_id?: string | null;
+          item_type?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 };
@@ -462,3 +523,7 @@ export type SprintTaskUpdate = Database["public"]["Tables"]["sprint_tasks"]["Upd
 export type TaskDependency = Database["public"]["Tables"]["task_dependencies"]["Row"];
 export type TaskDependencyInsert = Database["public"]["Tables"]["task_dependencies"]["Insert"];
 export type TaskDependencyUpdate = Database["public"]["Tables"]["task_dependencies"]["Update"];
+
+export type PersistentNotification = Database["public"]["Tables"]["notifications"]["Row"];
+export type PersistentNotificationInsert = Database["public"]["Tables"]["notifications"]["Insert"];
+export type PersistentNotificationUpdate = Database["public"]["Tables"]["notifications"]["Update"];

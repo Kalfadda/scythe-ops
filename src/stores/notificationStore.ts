@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
+import type { PersistentNotificationType, PersistentNotificationVariant } from "@/types/database";
 
 export type NotificationType =
   | "task_created"
@@ -44,6 +46,22 @@ interface NotificationState {
   setSoundEnabled: (enabled: boolean) => void;
 }
 
+// Persist notification to database (fire and forget)
+async function persistNotification(notification: Omit<Notification, "id" | "timestamp">) {
+  try {
+    await supabase.from("notifications").insert({
+      type: notification.type as PersistentNotificationType,
+      variant: notification.variant as PersistentNotificationVariant,
+      title: notification.title,
+      message: notification.message,
+      actor_name: notification.actorName || null,
+      item_name: notification.itemName || null,
+    });
+  } catch (error) {
+    console.error("Failed to persist notification:", error);
+  }
+}
+
 export const useNotificationStore = create<NotificationState>()((set, get) => ({
   notifications: [],
   maxNotifications: 5,
@@ -56,6 +74,9 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
       id,
       timestamp: Date.now(),
     };
+
+    // Persist to database (fire and forget - don't block the UI)
+    persistNotification(notification);
 
     set((state) => ({
       notifications: [

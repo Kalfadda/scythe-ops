@@ -17,10 +17,11 @@ import { ScheduleView } from "@/features/schedule";
 import { ModelingView } from "@/features/modeling";
 import { FeatureRequestsView } from "@/features/featurerequests";
 import { SprintsView } from "@/features/sprints/components/SprintsView";
-import { Box, LogOut, Settings, Clock, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays, Wrench, ChevronDown, GitCompare, Cpu, Lightbulb, FileQuestion, PlayCircle, Zap } from "lucide-react";
+import { NotificationsView } from "@/features/notifications";
+import { Box, LogOut, Settings, Clock, Wifi, Tag, X, ListTodo, Boxes, CircleCheck, Archive, Info, CalendarDays, Wrench, ChevronDown, GitCompare, Cpu, Lightbulb, FileQuestion, PlayCircle, Zap, Bell } from "lucide-react";
 import { ASSET_CATEGORIES, type AssetCategory, type AssetStatus } from "@/types/database";
 
-type MainView = "tasks" | "schedule" | "modelingrequests" | "compare" | "featurerequests" | "sprints";
+type MainView = "tasks" | "schedule" | "modelingrequests" | "compare" | "featurerequests" | "sprints" | "notifications";
 type ToolItem = { id: MainView; label: string; icon: React.ReactNode };
 type TechnicalItem = { id: MainView; label: string; icon: React.ReactNode };
 type ModelingItem = { id: MainView; label: string; icon: React.ReactNode };
@@ -360,6 +361,31 @@ export function Dashboard() {
               ))}
             </div>
           </div>
+
+          {/* Notifications Button */}
+          <button
+            onClick={() => setMainView("notifications")}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 16px',
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 14,
+              fontWeight: 500,
+              backgroundColor: mainView === "notifications" ? 'rgba(251, 146, 60, 0.2)' : 'transparent',
+              color: mainView === "notifications" ? '#fb923c' : '#9ca3af',
+              marginTop: 8,
+              textAlign: 'left',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Bell style={{ width: 20, height: 20 }} />
+            Notifications
+          </button>
 
           {/* Tools Dropdown */}
           <div style={{ marginTop: 8 }}>
@@ -743,6 +769,12 @@ export function Dashboard() {
         {mainView === "sprints" && (
           <main style={{ maxWidth: 1152, margin: '0 auto', padding: '32px 24px' }}>
             <SprintsView />
+          </main>
+        )}
+
+        {mainView === "notifications" && (
+          <main style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px' }}>
+            <NotificationsView />
           </main>
         )}
       </div>
